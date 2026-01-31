@@ -92,10 +92,10 @@ function PropertyCard({
   };
 
   return (
-    <Card className="border-border bg-card">
+    <Card className="border-border bg-card overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
             <CardTitle className="text-base truncate">{property.address}</CardTitle>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="text-xs">
@@ -306,7 +306,7 @@ export function PropertyPanel({
   }
 
   return (
-    <div className="absolute left-4 top-24 z-10 flex h-[calc(100vh-112px)] w-96 flex-col rounded-lg bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <div className="absolute left-4 top-24 z-10 flex h-[calc(100vh-112px)] w-96 max-w-[calc(100vw-2rem)] flex-col rounded-lg bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/80 overflow-hidden">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <Building2 className="h-5 w-5 text-accent" />
@@ -316,8 +316,8 @@ export function PropertyPanel({
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 p-4 overflow-y-auto">
+        <div className="space-y-4 pr-4">
           {selectedProperties.map((property) => (
             <PropertyCard
               key={property.id}

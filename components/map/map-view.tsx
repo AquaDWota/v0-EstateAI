@@ -76,7 +76,7 @@ export function MapView({
         zoom={viewState.zoom}
         style={{height: "100vh", width: "100%"}}
         className="h-full w-full z-5"
-        zoomControl={true}
+        zoomControl={false}
       >
         <MapController viewState={viewState} onViewStateChange={onViewStateChange} />
         <TileLayer

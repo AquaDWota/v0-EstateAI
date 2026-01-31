@@ -91,7 +91,7 @@ export function MapFiltersBar({
     (filters.propertyTypes.length > 0 && filters.propertyTypes.length < 4 ? 1 : 0);
 
   return (
-    <div className="absolute left-4 top-4 z-10 flex flex-col gap-3">
+    <div className="absolute left-4 top-4 z-10 flex w-96 flex-col gap-3">
       {/* ZIP Code Input */}
       <div className="flex items-center gap-2 rounded-lg bg-card p-2 shadow-lg">
         <div className="flex items-center gap-2 rounded-md bg-background px-3 py-2">

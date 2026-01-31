@@ -41,6 +41,17 @@ export function Header() {
             Underwrite
           </Link>
           <Link
+            href="/map"
+            className={cn(
+              "text-sm font-medium transition-colors hover:text-foreground",
+              pathname === "/map"
+                ? "text-foreground"
+                : "text-muted-foreground"
+            )}
+          >
+            Map Search
+          </Link>
+          <Link
             href="/about"
             className={cn(
               "text-sm font-medium transition-colors hover:text-foreground",

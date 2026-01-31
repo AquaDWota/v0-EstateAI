@@ -3,7 +3,6 @@ import type {
   AnalyzePropertiesRequest,
   AnalyzePropertiesResponse,
 } from "@/lib/types";
-import { analyzeProperties } from "@/lib/analysis";
 
 export async function POST(request: Request) {
   try {
@@ -24,24 +23,30 @@ export async function POST(request: Request) {
       );
     }
     
-    // Simulate processing delay (like a real backend would have)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    // Run analysis
-    const { results, summary } = analyzeProperties(
-      body.properties,
-      body.globalAssumptions,
-      body.zipCode
+    const backendUrl =
+      process.env.BACKEND_URL?.replace(/\/$/, "") || "http://localhost:8000";
+    const backendResponse = await fetch(
+      `${backendUrl}/analyze-properties`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }
     );
-    
-    const response: AnalyzePropertiesResponse = {
-      results,
-      meta: {
-        zipCode: body.zipCode,
-        summary,
-      },
-    };
-    
+
+    if (!backendResponse.ok) {
+      const errorText = await backendResponse.text();
+      return NextResponse.json(
+        {
+          error:
+            errorText ||
+            "Backend analysis failed. Please verify the Python API is running.",
+        },
+        { status: backendResponse.status }
+      );
+    }
+
+    const response: AnalyzePropertiesResponse = await backendResponse.json();
     return NextResponse.json(response);
   } catch (error) {
     console.error("Analysis error:", error);

@@ -14,11 +14,8 @@ import type {
   GlobalAssumptions,
   AnalyzePropertiesResponse,
 } from "@/lib/types";
-import {
-  DEFAULT_ASSUMPTIONS,
-  generateMockProperty,
-  createEmptyProperty,
-} from "@/lib/mock-data";
+import { DEFAULT_ASSUMPTIONS, createEmptyProperty } from "@/lib/mock-data";
+import type { MapProperty } from "@/lib/map-types";
 
 const MIN_PROPERTIES = 2;
 const MAX_PROPERTIES = 5;
@@ -71,17 +68,45 @@ export default function UnderwritePage() {
   }, []);
 
   const handlePrefillProperty = useCallback(
-    (id: string) => {
-      setProperties((prev) =>
-        prev.map((p) =>
-          p.id === id
-            ? {
-                ...generateMockProperty(zipCode, prev.indexOf(p)),
-                id: p.id,
-              }
-            : p
-        )
-      );
+    async (id: string) => {
+      try {
+        const response = await fetch(`/api/properties?zipCode=${zipCode}&count=50`);
+        if (!response.ok) {
+          throw new Error("Failed to load sample properties.");
+        }
+        const options: MapProperty[] = await response.json();
+        if (options.length === 0) {
+          return;
+        }
+        setProperties((prev) =>
+          prev.map((p, index) => {
+            if (p.id !== id) return p;
+            const pick = options[index % options.length];
+            return {
+              id: p.id,
+              nickname: `${pick.propertyType.charAt(0).toUpperCase() + pick.propertyType.slice(1).replace("-", " ")} - ${pick.address}`,
+              address: `${pick.address}, ${pick.zipCode}`,
+              zipCode: pick.zipCode,
+              listPrice: pick.listPrice,
+              estimatedRent: pick.estimatedRent,
+              propertyTaxPerYear: pick.propertyTaxPerYear,
+              insurancePerYear: pick.insurancePerYear,
+              hoaPerYear: pick.hoaPerYear,
+              maintenancePerMonth: Math.round(pick.listPrice * 0.001 / 12),
+              utilitiesPerMonth: 0,
+              vacancyRatePercent: 5,
+              downPaymentPercent: 25,
+              interestRatePercent: 7.0,
+              loanTermYears: 30,
+              closingCosts: Math.round(pick.listPrice * 0.03),
+              renovationBudget: 0,
+              arv: Math.round(pick.listPrice * 1.1),
+            };
+          })
+        );
+      } catch (error) {
+        console.error("Prefill error:", error);
+      }
     },
     [zipCode]
   );

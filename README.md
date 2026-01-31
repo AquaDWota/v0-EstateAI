@@ -28,3 +28,43 @@ Continue building your app on:
 2. Deploy your chats from the v0 interface
 3. Changes are automatically pushed to this repository
 4. Vercel deploys the latest version from this repository
+
+## Backend API
+
+Start the Python API:
+
+```bash
+uvicorn backend.main:app --reload --port 8000
+```
+
+Or via npm script:
+
+```bash
+npm run dev:backend
+```
+
+### Endpoints
+
+`POST /analyze-properties`
+
+```bash
+curl -X POST http://localhost:8000/analyze-properties \
+  -H "Content-Type: application/json" \
+  -d '{
+    "zipCode": "02134",
+    "globalAssumptions": {
+      "defaultVacancyRatePercent": 5,
+      "defaultAppreciationRatePercent": 3,
+      "defaultMaintenancePercent": 1
+    },
+    "properties": []
+  }'
+```
+
+`GET /api/properties`
+
+Query params: `zipCode`, `centerLat`, `centerLng`, `count`, `priceMin`, `priceMax`, `beds`, `baths`, `homeType` (comma-separated).
+
+`GET /api/properties/{id}`
+
+Returns a single listing by id.

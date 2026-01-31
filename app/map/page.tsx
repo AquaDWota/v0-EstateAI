@@ -136,7 +136,7 @@ export default function MapPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
 
-      <main className="relative flex-1">
+      <main className="relative flex-1 overflow-hidden">
         {/* Map View */}
         <MapView
           properties={filteredProperties}

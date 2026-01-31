@@ -46,6 +46,7 @@ const AGENTS = [
 
 export function AgentBadges() {
   return (
+    // change this so that the width fits the parent width
     <Card className="border-border bg-card">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">

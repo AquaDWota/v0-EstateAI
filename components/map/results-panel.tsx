@@ -99,8 +99,8 @@ export function MapResultsPanel({
   return (
     <div
       className={cn(
-        "absolute right-0 top-0 z-20 h-full w-[480px] bg-background/95 shadow-xl backdrop-blur transition-transform duration-300 ease-in-out supports-[backdrop-filter]:bg-background/80",
-        isVisible ? "translate-x-0" : "translate-x-full"
+        "absolute top-4 right-4 z-20 h-[90vh] w-full max-w-md transform-gpu overflow-hidden rounded-lg border border-border bg-background shadow-lg transition-all duration-300 md:w-1/3",
+        isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       )}
     >
       <div className="flex h-full flex-col">
@@ -116,7 +116,7 @@ export function MapResultsPanel({
         </div>
 
         {/* Content */}
-        <ScrollArea className="flex-1 p-4">
+        <ScrollArea className="flex-1 p-4 overflow-y-auto">
           {isLoading && (
             <Card className="border-border bg-card">
               <CardContent className="flex flex-col items-center justify-center py-16">
@@ -146,7 +146,7 @@ export function MapResultsPanel({
           )}
 
           {!isLoading && results && (
-            <div className="space-y-6">
+            <div className="space-y-6 absolute w-full">
               {/* AI Underwriters Panel */}
               <AgentBadges />
 
@@ -154,7 +154,7 @@ export function MapResultsPanel({
               <Card className="border-border bg-card">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <Trophy className="h-5 w-5 text-accent" />
+                    <Trophy className="h-5 w-4 text-accent" />
                     Analysis Summary
                   </CardTitle>
                 </CardHeader>

@@ -31,7 +31,7 @@ export function PropertyMarker({
       onClick={onClick}
       style={style}
       className={cn(
-        "absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200",
+        "absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 z-8",
         "group"
       )}
     >

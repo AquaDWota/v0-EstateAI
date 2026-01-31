@@ -74,8 +74,8 @@ export function MapView({
       <MapContainer
         center={[viewState.center.lat, viewState.center.lng]}
         zoom={viewState.zoom}
-        style={{height: "100vh", width: "100%"}}
-        className="h-full w-full z-5"
+        style={{height: "100%", width: "100%"}}
+        className="h-full w-full z-5 overflow-x-hidden overflow-y-hidden"
         zoomControl={false}
       >
         <MapController viewState={viewState} onViewStateChange={onViewStateChange} />

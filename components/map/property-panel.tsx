@@ -306,7 +306,7 @@ export function PropertyPanel({
   }
 
   return (
-    <div className="absolute left-4 top-24 z-10 flex h-[calc(100vh-112px)] w-96 max-w-[calc(100vw-2rem)] flex-col rounded-lg bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/80 overflow-hidden">
+    <div className="absolute left-4 top-24 z-10 flex max-h-[calc(100vh-12rem)] w-96 max-w-[calc(100vw-2rem)] flex-col rounded-lg bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/80 overflow-hidden">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <Building2 className="h-5 w-5 text-accent" />

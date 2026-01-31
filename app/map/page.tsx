@@ -133,10 +133,9 @@ export default function MapPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex h-screen flex-col bg-background overflow-hidden">
       <Header />
-
-      <main className="relative flex-1 overflow-hidden">
+      <div className="relative flex-1 overflow-hidden">
         {/* Map View */}
         <MapView
           properties={filteredProperties}
@@ -172,13 +171,13 @@ export default function MapPage() {
         />
 
         {/* Property Count Badge */}
-        <div className="absolute bottom-4 left-4 z-10 rounded-lg bg-card px-3 py-2 text-sm shadow-lg">
+        {/* <div className="absolute bottom-4 left-4 z-10 rounded-lg bg-card px-3 py-2 text-sm shadow-lg">
           <span className="font-medium text-foreground">
             {filteredProperties.length}
           </span>{" "}
           <span className="text-muted-foreground">properties found</span>
-        </div>
-      </main>
+        </div> */}
+      </div>
     </div>
   );
 }

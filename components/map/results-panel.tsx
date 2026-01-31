@@ -100,7 +100,7 @@ export function MapResultsPanel({
     <div
       className={cn(
         "absolute right-0 top-0 z-20 h-full w-[480px] bg-background/95 shadow-xl backdrop-blur transition-transform duration-300 ease-in-out supports-[backdrop-filter]:bg-background/80",
-        isVisible ? "block" : "hidden"
+        isVisible ? "translate-x-0" : "translate-x-full"
       )}
     >
       <div className="flex h-full flex-col">

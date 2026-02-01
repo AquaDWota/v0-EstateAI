@@ -250,17 +250,6 @@ export function MapFiltersBar({
             {zipError}
           </div>
         )}
-
-        {/* Current Area Badge */}
-        {zipCode.length === 5 && isValidNewEnglandZip(zipCode) && (
-          <Badge
-            variant="secondary"
-            className="w-fit bg-card text-foreground shadow-md"
-          >
-            <MapPin className="mr-1 h-3 w-3" />
-            {getZipAreaName(zipCode)}
-          </Badge>
-        )}
       </div>
     </div>
   );

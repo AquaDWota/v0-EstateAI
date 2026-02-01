@@ -10,6 +10,10 @@ export function filterProperties(
     propertyTypes: PropertyType[];
   }
 ) {
+  if (!properties || properties.length === 0) {
+    return [];
+  }
+
   return properties.filter((p) => {
     //filter based on the given filters
     return (

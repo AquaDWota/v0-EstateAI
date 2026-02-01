@@ -11,6 +11,7 @@ import { ZIP_COORDINATES, DEFAULT_CENTER, DEFAULT_ZOOM } from "@/lib/map-types";
 import { generatePropertiesForZip, generatePropertiesForArea, filterProperties } from "@/lib/map-mock-data";
 import type { PropertyInput, AnalyzePropertiesResponse } from "@/lib/types";
 import { DEFAULT_ASSUMPTIONS } from "@/lib/mock-data";
+import dynamic from "next/dynamic";
 
 export default function MapPage() {
   const [zipCode, setZipCode] = useState("");
@@ -131,6 +132,8 @@ export default function MapPage() {
       setIsAnalyzing(false);
     }
   }, []);
+
+  const MapView = dynamic(() => import('@/components/map/map-view').then(mod => mod.MapView), { ssr: false });
 
   return (
     <div className="flex h-screen flex-col bg-background overflow-hidden">

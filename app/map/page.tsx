@@ -55,6 +55,7 @@ export default function MapPage() {
           throw new Error("Failed to load properties");
         }
         const data: MapProperty[] = await response.json();
+        console.log(data);
         setAllProperties(data);
       } catch (error) {
         console.error("Property load error:", error);
@@ -121,8 +122,6 @@ export default function MapPage() {
     }
   }, [zipCode]);
 
-  console.log("All Properties:", allProperties);
-  console.log("Filters:", filters);
   // Filter properties
   const filteredProperties = filterProperties(allProperties, filters);
 
@@ -171,6 +170,7 @@ export default function MapPage() {
       }
 
       const data = await response.json();
+      console.log(data);
       setAnalysisResults(data);
     } catch (error) {
       console.error("Analysis error:", error);

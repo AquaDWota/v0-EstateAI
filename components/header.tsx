@@ -44,7 +44,7 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <Button asChild size="lg" className="text-base font-semibold">
-            <Link href="/map">Explore Properties</Link>
+            <Link href="/map?address=02125">Explore Properties</Link>
           </Button>
         </div>
       </div>

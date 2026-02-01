@@ -97,7 +97,7 @@ export default function HomePage() {
                       <Button
                         type="submit"
                         size="lg"
-                        className="h-12 flex-shrink-0 gap-2 px-6 sm:px-8"
+                        className="h-12 flex-shrink-0 gap-2 px-6 sm:px-8 cursor-pointer"
                       >
                         <Search className="h-5 w-5" />
                         <span className="hidden sm:inline">Analyze</span>
@@ -273,7 +273,7 @@ export default function HomePage() {
                 size="lg"
                 variant="secondary"
                 asChild
-                className="min-w-[200px]"
+                className="min-w-[200px] cursor-pointer"
               >
                 <Link href="/underwrite">
                   Start Underwriting

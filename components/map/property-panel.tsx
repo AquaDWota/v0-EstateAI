@@ -332,7 +332,7 @@ export function PropertyPanel({
 
       <div className="border-t border-border p-4">
         <Button
-          className="w-full"
+          className="w-full cursor-pointer"
           size="lg"
           onClick={handleAnalyze}
           disabled={isAnalyzing || selectedProperties.length < 2}

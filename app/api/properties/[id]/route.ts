@@ -17,29 +17,16 @@ export async function GET(request: Request, { params }: Params) {
     }
 
     const collection = await getPropertiesCollection();
-    
-    // Try to fetch by ObjectId first, then by string id
-    let property;
-    try {
-      property = await collection.findOne({ _id: new ObjectId(id) });
-    } catch {
-      property = await collection.findOne({ id });
-    }
+    const properties = await collection.find({'zipCode': id}).toArray();
 
-    if (!property) {
+    if (!properties) {
       return NextResponse.json(
         { error: "Property not found" },
         { status: 404 }
       );
     }
 
-    // Convert MongoDB _id to string
-    const data = {
-      ...property,
-      _id: property._id.toString(),
-    };
-
-    return NextResponse.json(data);
+    return NextResponse.json(properties);
   } catch (error) {
     console.error("Property fetch error:", error);
     return NextResponse.json(

@@ -42,3 +42,5 @@ watchfiles==1.1.1
 websockets==16.0
 pymongo[srv]==4.11.1
 fetchai
+pytest
+uagents

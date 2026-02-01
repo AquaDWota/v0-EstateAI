@@ -5,8 +5,11 @@ type Params = { params: { id: string } };
 
 export async function GET(request: Request, { params }: Params) {
   try {
-    const backendUrl =
-      process.env.BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000";
+    // In production (Vercel), use relative URL for serverless functions
+    // In development, use localhost backend
+    const backendUrl = process.env.VERCEL_ENV 
+      ? "" // Use relative path in Vercel
+      : (process.env.BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000");
     const { id } = await params;
     const response = await fetch(`${backendUrl}/api/properties/${id}`);
 

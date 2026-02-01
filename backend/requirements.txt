@@ -44,3 +44,4 @@ pymongo[srv]==4.11.1
 fetchai
 pytest
 uagents
+mangum==0.17.0

@@ -5,7 +5,6 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "dev:backend": "uvicorn backend.main:app --reload --port 8000",
     "lint": "eslint .",
     "start": "next start"
   },

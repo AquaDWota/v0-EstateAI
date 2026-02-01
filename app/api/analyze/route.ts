@@ -23,8 +23,11 @@ export async function POST(request: Request) {
       );
     }
     
-    const backendUrl =
-      process.env.BACKEND_URL?.replace(/\/$/, "") || "http://localhost:8000";
+    // In production (Vercel), use relative URL for serverless functions
+    // In development, use localhost backend
+    const backendUrl = process.env.VERCEL_ENV 
+      ? "" // Use relative path in Vercel
+      : (process.env.BACKEND_URL?.replace(/\/$/, "") || "http://localhost:8000");
     
     // Call the new agent-commentary endpoint that includes AI commentary
     const backendResponse = await fetch(

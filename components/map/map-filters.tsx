@@ -113,7 +113,7 @@ export function MapFiltersBar({
           <Button
             onClick={handleZipSubmit}
             size="sm"
-            className="h-9 flex-shrink-0"
+            className="h-9 flex-shrink-0 pointer"
           >
             Search
           </Button>

@@ -45,3 +45,4 @@ fetchai
 pytest
 uagents
 mangum==0.17.0
+mongodb

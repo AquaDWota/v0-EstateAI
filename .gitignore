@@ -31,5 +31,5 @@ next-env.d.ts
 *.pyd
 *.pyo
 __pycache__
-backend/__pycache__/*
+backend/__pycache__/main.*
 backend/venv/*

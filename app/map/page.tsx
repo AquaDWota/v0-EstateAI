@@ -48,7 +48,7 @@ export default function MapPage() {
       }
       setIsLoadingProperties(true);
       try {
-        const response = await fetch(`/api/properties?${query.toString()}`);
+        const response = await fetch(`/api/properties/06109`);
         if (!response.ok) {
           throw new Error("Failed to load properties");
         }

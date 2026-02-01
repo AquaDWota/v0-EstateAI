@@ -1,0 +1,4 @@
+from .main import call_agent_with_user_data
+
+def test_call_agent_with_user_data():
+    assert call_agent_with_user_data() is not None

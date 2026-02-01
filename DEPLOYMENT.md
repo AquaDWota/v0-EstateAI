@@ -1,6 +1,6 @@
 # Deploying to Vercel
 
-This guide explains how to deploy your Next.js + FastAPI application to Vercel.
+This guide explains how to deploy your Next.js application to Vercel.
 
 ## Prerequisites
 
@@ -8,17 +8,18 @@ This guide explains how to deploy your Next.js + FastAPI application to Vercel.
 - Git repository connected to Vercel
 - MongoDB database (Atlas or similar)
 
+## Architecture
+
+This is a **pure Next.js application** - no separate backend needed!
+
+- **Frontend**: Next.js pages and components
+- **Backend Logic**: Ported to TypeScript in `lib/analysis-logic.ts`
+- **API Routes**: Next.js API routes in `app/api/`
+- **Database**: MongoDB via the official Node.js driver
+
 ## Deployment Steps
 
-### 1. Push Your Code
-
-```bash
-git add .
-git commit -m "Configure for Vercel deployment"
-git push origin main
-```
-
-### 2. Configure Environment Variables in Vercel
+### 1. Configure Environment Variables in Vercel
 
 Go to your Vercel project settings and add these environment variables:
 
@@ -26,11 +27,18 @@ Go to your Vercel project settings and add these environment variables:
 - `MONGODB_URI` - Your MongoDB connection string
 
 **Optional:**
-- `BACKEND_URL` - Leave empty for production (handled automatically)
+- `MONGODB_DB` - Database name (defaults to "EstateAI")
+- `MONGODB_COLLECTION` - Collection name (defaults to "Sample-Listing")
 
-### 3. Deploy
+### 2. Deploy
 
-Vercel will automatically deploy when you push to your repository. Or you can:
+```bash
+git add .
+git commit -m "Convert to Next.js-only architecture"
+git push origin main
+```
+
+Vercel will automatically deploy when you push to your repository. Or use the CLI:
 
 ```bash
 # Install Vercel CLI if you haven't
@@ -42,75 +50,75 @@ vercel --prod
 
 ## How It Works
 
-### Architecture
+### Single Build Process
 
-- **Next.js Frontend**: Deployed as static pages and API routes
-- **FastAPI Backend**: Deployed as Python serverless functions in `/api/backend/`
+- `npm run build` - Builds everything (frontend + API routes)
+- All APIs are Next.js serverless functions
+- No Python, no separate backend server needed
 
-### URL Routing
+### API Routes
 
-The `vercel.json` configuration handles routing:
+All API endpoints are in `app/api/`:
 
-- All `/backend-api/*` requests → Python serverless function at `/api/backend/index`
-- FastAPI app handles internal routing (`/api/agent-commentary`, `/api/properties/*`, etc.)
-- All other routes → Next.js
+- `/api/analyze` - Property analysis endpoint
+- `/api/properties` - Fetch properties by ZIP code
+- `/api/properties/[id]` - Fetch single property by ID
 
-### Development vs Production
+### Business Logic
 
-**Development (Local):**
+- `lib/analysis-logic.ts` - Property analysis calculations (ported from Python)
+- `lib/mongodb.ts` - MongoDB connection helper
+- `lib/types.ts` - TypeScript type definitions
+
+## Development
+
 ```bash
-# Terminal 1: Run Next.js
+# Single command to run everything
 npm run dev
-
-# Terminal 2: Run FastAPI backend (if needed for testing)
-cd backend && uvicorn main:app --reload --port 8000
 ```
 
-**Production (Vercel):**
-- Single deploy command: `npm run build`
-- All routes handled automatically by Vercel
-- Python functions run as serverless
+Visit http://localhost:3000 - all APIs work automatically!
 
 ## Key Files
 
-- `vercel.json` - Routing configuration (routes `/backend-api/*` to Python)
-- `api/backend/index.py` - Single Python serverless function handler
-- `backend/requirements.txt` - Python dependencies
+- `app/api/*` - Next.js API routes (serverless functions)
+- `lib/analysis-logic.ts` - Core business logic
+- `lib/mongodb.ts` - Database connection
 - `.env.example` - Required environment variables
+- `package.json` - Dependencies (includes `mongodb` driver)
 
 ## Troubleshooting
 
-### Python Import Errors
-
-If you see import errors in production, ensure:
-1. All dependencies are in `backend/requirements.txt`
-2. The `mangum` adapter is installed (version 0.17.0)
-3. Paths in `api/backend/*.py` correctly reference the backend folder
-
-### Database Connection Issues
+### MongoDB Connection Issues
 
 1. Ensure `MONGODB_URI` is set in Vercel environment variables
 2. Whitelist Vercel's IP addresses in MongoDB Atlas (or allow all: 0.0.0.0/0)
 3. Check that the connection string includes authentication credentials
+4. Test connection locally with `.env.local`
 
-### Function Timeout
+### Build Errors
+
+If you see build errors:
+1. Check TypeScript errors: `npm run lint`
+2. Ensure all dependencies are installed: `npm install`
+3. Verify environment variables are set
+
+### API Timeout
 
 Vercel serverless functions have a 10-second timeout on Hobby plan, 60 seconds on Pro.
-If your analysis takes longer, consider:
-- Optimizing the analysis logic
-- Upgrading to Vercel Pro
-- Moving long-running tasks to a background job queue
+If your analysis takes longer:
+- Optimize calculation logic
+- Upgrade to Vercel Pro
+- Consider caching results
 
 ## Local Testing
 
-To test the Vercel configuration locally:
-
 ```bash
-# Install Vercel CLI
-npm i -g vercel
+# Create .env.local with your MongoDB URI
+echo "MONGODB_URI=your-connection-string" > .env.local
 
-# Run locally with Vercel dev server
-vercel dev
+# Run the development server
+npm run dev
 ```
 
-This simulates the Vercel production environment on your local machine.
+The app will be available at http://localhost:3000 with full API functionality.

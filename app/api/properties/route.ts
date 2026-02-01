@@ -1,32 +1,31 @@
 import { NextResponse } from "next/server";
 import type { MapProperty } from "@/lib/map-types";
+import { getPropertiesCollection } from "@/lib/mongodb";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const zipCode = searchParams.get('zipCode') || searchParams.toString();
-    // In production (Vercel), use /backend-api prefix for serverless functions
-    // In development, use localhost backend
-    const backendUrl = process.env.VERCEL_ENV 
-      ? "/backend-api" // Use Vercel serverless path
-      : (process.env.BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000");
 
-    const response = await fetch(
-      `${backendUrl}/api/properties/${zipCode}`
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (!zipCode) {
       return NextResponse.json(
-        { error: errorText || "Failed to fetch properties." },
-        { status: response.status }
+        { error: "ZIP code is required" },
+        { status: 400 }
       );
     }
 
-    const data: MapProperty[] = await response.json();
+    const collection = await getPropertiesCollection();
+    const properties = await collection.find({ zipCode }).toArray();
+
+    // Convert MongoDB _id to string
+    const data = properties.map((prop: any) => ({
+      ...prop,
+      _id: prop._id.toString(),
+    }));
+
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Properties proxy error:", error);
+    console.error("Properties fetch error:", error);
     return NextResponse.json(
       { error: "Failed to fetch properties." },
       { status: 500 }

@@ -1,30 +1,47 @@
 import { NextResponse } from "next/server";
 import type { MapProperty } from "@/lib/map-types";
+import { getPropertiesCollection } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 type Params = { params: { id: string } };
 
 export async function GET(request: Request, { params }: Params) {
   try {
-    // In production (Vercel), use /backend-api prefix for serverless functions
-    // In development, use localhost backend
-    const backendUrl = process.env.VERCEL_ENV 
-      ? "/backend-api" // Use Vercel serverless path
-      : (process.env.BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000");
     const { id } = await params;
-    const response = await fetch(`${backendUrl}/api/properties/${id}`);
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (!id) {
       return NextResponse.json(
-        { error: errorText || "Failed to fetch property." },
-        { status: response.status }
+        { error: "Property ID is required" },
+        { status: 400 }
       );
     }
 
-    const data: MapProperty = await response.json();
+    const collection = await getPropertiesCollection();
+    
+    // Try to fetch by ObjectId first, then by string id
+    let property;
+    try {
+      property = await collection.findOne({ _id: new ObjectId(id) });
+    } catch {
+      property = await collection.findOne({ id });
+    }
+
+    if (!property) {
+      return NextResponse.json(
+        { error: "Property not found" },
+        { status: 404 }
+      );
+    }
+
+    // Convert MongoDB _id to string
+    const data = {
+      ...property,
+      _id: property._id.toString(),
+    };
+
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Property proxy error:", error);
+    console.error("Property fetch error:", error);
     return NextResponse.json(
       { error: "Failed to fetch property." },
       { status: 500 }

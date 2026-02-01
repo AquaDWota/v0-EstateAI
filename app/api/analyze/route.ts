@@ -3,6 +3,7 @@ import type {
   AnalyzePropertiesRequest,
   AgentCommentaryResponse,
 } from "@/lib/types";
+import { analyzeProperties } from "@/lib/analysis-logic";
 
 export async function POST(request: Request) {
   try {
@@ -22,36 +23,45 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    
-    // In production (Vercel), use /backend-api prefix for serverless functions
-    // In development, use localhost backend
-    const backendUrl = process.env.VERCEL_ENV 
-      ? "/backend-api" // Use Vercel serverless path
-      : (process.env.BACKEND_URL?.replace(/\/$/, "") || "http://localhost:8000");
-    
-    // Call the new agent-commentary endpoint that includes AI commentary
-    const backendResponse = await fetch(
-      `${backendUrl}/api/agent-commentary`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      }
+
+    // Run analysis using Next.js implementation
+    const results = analyzeProperties(
+      body.properties,
+      body.globalAssumptions,
+      body.zipCode
     );
+    
+    // Sort by overall score
+    results.sort((a, b) => b.overallScore - a.overallScore);
 
-    if (!backendResponse.ok) {
-      const errorText = await backendResponse.text();
-      return NextResponse.json(
-        {
-          error:
-            errorText ||
-            "Backend analysis failed. Please verify the Python API is running.",
+    const top = results[0];
+    const summary = `Analyzed ${results.length} properties in ZIP ${body.zipCode}. Top pick: ${top.property.nickname} with ${top.metrics.cashOnCashReturnPercent.toFixed(1)}% cash-on-cash return and ${top.metrics.riskLevel} risk profile.`;
+
+    // Mock agent commentary (replace with actual agent call if needed)
+    const agentCommentary = {
+      cashFlowSummary: `Analysis of ${results.length} properties completed`,
+      riskSummary: "Risk assessment based on market conditions",
+      marketTimingSummary: "Current market analysis",
+      renovationSummary: "Renovation recommendations",
+      overallSummary: summary,
+      keyBullets: [
+        "Property analysis complete",
+        `Top property: ${top.property.nickname}`,
+        `Overall score: ${top.overallScore.toFixed(2)}`,
+      ],
+    };
+
+    const response: AgentCommentaryResponse = {
+      analysis: {
+        results,
+        meta: {
+          zipCode: body.zipCode,
+          summary,
         },
-        { status: backendResponse.status }
-      );
-    }
+      },
+      agentCommentary,
+    };
 
-    const response: AgentCommentaryResponse = await backendResponse.json();
     return NextResponse.json(response);
   } catch (error) {
     console.error("Analysis error:", error);

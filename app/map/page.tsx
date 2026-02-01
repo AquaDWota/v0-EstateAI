@@ -8,10 +8,10 @@ import { PropertyPanel } from "@/components/map/property-panel";
 import { MapResultsPanel } from "@/components/map/results-panel";
 import type { MapProperty, MapFilters, MapViewState } from "@/lib/map-types";
 import { ZIP_COORDINATES, DEFAULT_CENTER, DEFAULT_ZOOM } from "@/lib/map-types";
-import { generatePropertiesForZip, generatePropertiesForArea, filterProperties } from "@/lib/map-mock-data";
 import type { PropertyInput, AnalyzePropertiesResponse } from "@/lib/types";
 import { DEFAULT_ASSUMPTIONS } from "@/lib/mock-data";
 import dynamic from "next/dynamic";
+import { getPropertiesByZipCode, filterProperties } from "@/components/map/property-manager";
 
 export default function MapPage() {
   const [zipCode, setZipCode] = useState("");
@@ -44,21 +44,9 @@ export default function MapPage() {
             center: { lat: latitude, lng: longitude },
             zoom: DEFAULT_ZOOM,
           });
-          // Generate properties around user location
-          const properties = generatePropertiesForArea(latitude, longitude, 20);
-          setAllProperties(properties);
         },
-        () => {
-          // If geolocation fails, use default (Boston)
-          const properties = generatePropertiesForZip("02134", 20);
-          setAllProperties(properties);
-        }
       );
-    } else {
-      // Fallback to Boston
-      const properties = generatePropertiesForZip("02134", 20);
-      setAllProperties(properties);
-    }
+    }   
   }, []);
 
   // Handle ZIP code submission
@@ -69,7 +57,7 @@ export default function MapPage() {
         center: { lat: coords.lat, lng: coords.lng },
         zoom: 13,
       });
-      const properties = generatePropertiesForZip(zipCode, 20);
+      const properties = getPropertiesByZipCode(zipCode);
       setAllProperties(properties);
       setSelectedIds([]);
       setShowResults(false);

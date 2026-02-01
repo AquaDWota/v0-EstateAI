@@ -24,8 +24,7 @@ export function PropertyMarker({
     }
     return `$${Math.round(price / 1000)}K`;
   };
-
-  return (
+return (
     <button
       type="button"
       onClick={onClick}

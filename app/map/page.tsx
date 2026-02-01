@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect, useCallback, use } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { MapFiltersBar } from "@/components/map/map-filters";
 import { MapView } from "@/components/map/map-view";
@@ -12,7 +12,7 @@ import { ZIP_COORDINATES, DEFAULT_CENTER, DEFAULT_ZOOM } from "@/lib/map-types";
 import type { PropertyInput, AnalyzePropertiesResponse } from "@/lib/types";
 import { DEFAULT_ASSUMPTIONS } from "@/lib/mock-data";
 import dynamic from "next/dynamic";
-import { getPropertiesByZipCode, filterProperties } from "@/components/map/property-manager";
+import { filterProperties } from "@/components/map/property-manager";
 
 export default function MapPage() {
   const searchParams = useSearchParams();
@@ -38,6 +38,8 @@ export default function MapPage() {
   const [showResults, setShowResults] = useState(false);
   const [isLoadingProperties, setIsLoadingProperties] = useState(false);
 
+  const router = useRouter();
+
   const fetchProperties = useCallback(
     async (params: Record<string, string | number | undefined>) => {
       const query = new URLSearchParams();
@@ -48,7 +50,7 @@ export default function MapPage() {
       }
       setIsLoadingProperties(true);
       try {
-        const response = await fetch(`/api/properties/06109`);
+        const response = await fetch(`/api/properties/${query.get("zipCode")}`);
         if (!response.ok) {
           throw new Error("Failed to load properties");
         }
@@ -78,8 +80,7 @@ export default function MapPage() {
             center: { lat: coords.lat, lng: coords.lng },
             zoom: 13,
           });
-          const properties = getPropertiesByZipCode(zip);
-          setAllProperties(properties);
+          fetchProperties({ zipCode: zip });
           return;
         }
       }
@@ -114,15 +115,14 @@ export default function MapPage() {
         center: { lat: coords.lat, lng: coords.lng },
         zoom: 13,
       });
-      fetchProperties({ zipCode, count: 200 });
-      const properties = getPropertiesByZipCode(zipCode);
-      setAllProperties(properties);
-      setSelectedIds([]);
-      setShowResults(false);
-      setAnalysisResults(null);
+      setAllProperties([]);
+      router.push(`/map?address=${zipCode.trim()}`);
+      fetchProperties({ zipCode: zipCode.trim() });
     }
-  }, [zipCode, fetchProperties]);
+  }, [zipCode]);
 
+  console.log("All Properties:", allProperties);
+  console.log("Filters:", filters);
   // Filter properties
   const filteredProperties = filterProperties(allProperties, filters);
 

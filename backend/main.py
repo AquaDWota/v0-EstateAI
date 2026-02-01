@@ -66,66 +66,106 @@ def get_properties(zip_code: str):
     return properties
 
 from .agent.agent import AgentverseClient
+import httpx
+from typing import Dict, Any
 
 
-# Example function to use AgentverseClient within an agent's message handler
-# The context (ctx) would be provided by the uagents framework
-def call_agent_with_user_data(ctx, property_data: dict):
+async def call_agent_with_analysis_data(analysis_payload: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Call this function from within a uagents message handler where ctx is available.
-    Sends property data to the appropriate agent and returns analysis summary.
+    Call the agent with analysis data from the underwriting results.
+    This function sends the data to Agentverse agents via HTTP.
     
     Args:
-        ctx: Context object provided by uagents framework
-        property_data: Dictionary containing property information matching PropertyInput type
-        
+        analysis_payload: Dictionary containing:
+            - input: Original request data
+            - results: Analysis results for all properties
+            - summary: Overall summary text
+            
     Returns:
-        AgentCommentary-like response with analysis summary
+        Agent commentary response with investment insights
     """
-    # Initialize the client with the provided context
-    client = AgentverseClient(ctx=ctx)
+    # Prepare the payload for the agent
+    # Extract the top property from results to determine which agent to call
+    if not analysis_payload.get("results"):
+        raise HTTPException(status_code=400, detail="No results in analysis payload")
     
-    # Extract property type to determine which agent to call
-    property_type = property_data.get("property_type", "single_family").lower()
+    top_property = analysis_payload["results"][0]
+    property_type = top_property.get("property", {}).get("propertyType", "single_family").lower()
     
-    # Prepare analysis request data
-    analysis_request = {
-        "property": {
-            "id": property_data.get("id"),
-            "nickname": property_data.get("nickname"),
-            "address": property_data.get("address"),
-            "zipCode": property_data.get("zipCode"),
-            "listPrice": property_data.get("listPrice"),
-            "estimatedRent": property_data.get("estimatedRent"),
-            "propertyTaxPerYear": property_data.get("propertyTaxPerYear"),
-            "insurancePerYear": property_data.get("insurancePerYear"),
-            "hoaPerYear": property_data.get("hoaPerYear"),
-            "maintenancePerMonth": property_data.get("maintenancePerMonth"),
-            "utilitiesPerMonth": property_data.get("utilitiesPerMonth"),
-            "vacancyRatePercent": property_data.get("vacancyRatePercent"),
-            "downPaymentPercent": property_data.get("downPaymentPercent"),
-            "interestRatePercent": property_data.get("interestRatePercent"),
-            "loanTermYears": property_data.get("loanTermYears"),
-            "closingCosts": property_data.get("closingCosts"),
-            "renovationBudget": property_data.get("renovationBudget"),
-            "arv": property_data.get("arv"),
-        }
+    # Map property types to agent addresses
+    agents_id = {
+        "selector": "agent1qgkq02guhyjsvdlum38rc6jm6y6wdsc6zy8jw267cjadf2a09ydag36t75n",
+        "single_family": "agent1qfx2t3l547y6fxh36sdlpdul6enjwq9ln7temx0svga45k8wpte6u0gx806",
+        "multi_family": "agent1qg9sdk22q7esjn6pkgszxkdeftvuu6wdf9lyldz9ymmh5987cx4u6aca03v",
+        "condo": "agent1qgw377xy88pww76us3c0y3v5vp9cdfuhya0w6ygy5ynd9e2klmxd29ru52m",
+        "townhouse": "agent1qv3jmxq2p0aj20tx9fsy4p84svqpxfysweajsjuxgstedl598xmxx42fn3h",
     }
-
-    # Call the appropriate agent based on property type
-    if property_type == "single_family":
-        response = client.callSingleFamily(analysis_request)
-    elif property_type == "multi_family":
-        response = client.callMultiFamily(analysis_request)
-    elif property_type == "condo":
-        response = client.callCondoFamily(analysis_request)
-    elif property_type == "townhouse":
-        response = client.callTownHouse(analysis_request)
-    else:
-        # Default to selector agent
-        response = client.callSelectorAgent(analysis_request)
     
-    return response
+    agent_key = property_type.replace(" ", "_")
+    if agent_key not in agents_id:
+        agent_key = "selector"
+    
+    # For now, return a mock response since we need proper Agentverse setup
+    # TODO: Replace with actual Agentverse API call
+    mock_response = {
+        "cashFlowSummary": f"Analysis of {len(analysis_payload['results'])} properties completed",
+        "riskSummary": "Risk assessment based on market conditions",
+        "marketTimingSummary": "Current market analysis",
+        "renovationSummary": "Renovation recommendations",
+        "overallSummary": analysis_payload.get("summary", "Investment analysis complete"),
+        "keyBullets": [
+            "Property analysis complete",
+            f"Top property: {top_property.get('property', {}).get('nickname', 'N/A')}",
+            f"Overall score: {top_property.get('overallScore', 0):.2f}"
+        ]
+    }
+    
+    return mock_response
+
+
+@app.post("/api/agent-commentary")
+async def get_agent_commentary(payload: AnalyzePropertiesRequest):
+    """
+    Analyze properties and get AI agent commentary on the results.
+    This endpoint combines property analysis with agent insights.
+    """
+    # First, run the property analysis
+    if not payload.zipCode or len(payload.properties) < 2:
+        raise HTTPException(status_code=400, detail="ZIP code and at least 2 properties are required.")
+    if len(payload.properties) > 5:
+        raise HTTPException(status_code=400, detail="Maximum 5 properties allowed per analysis.")
+
+    results = analyze_properties(payload.properties, payload.globalAssumptions, payload.zipCode)
+    results.sort(key=lambda item: item.overallScore, reverse=True)
+
+    top = results[0]
+    summary = (
+        f"Analyzed {len(results)} properties in ZIP {payload.zipCode}. "
+        f"Top pick: {top.property.nickname} with "
+        f"{top.metrics.cashOnCashReturnPercent:.1f}% cash-on-cash return and "
+        f"{top.metrics.riskLevel} risk profile."
+    )
+    
+    # Prepare the AI payload
+    ai_payload = {
+        "input": payload.model_dump(),
+        "results": [item.model_dump() for item in results],
+        "summary": summary,
+    }
+    
+    # Get agent commentary
+    agent_response = await call_agent_with_analysis_data(ai_payload)
+    
+    return {
+        "analysis": {
+            "results": results,
+            "meta": {
+                "zipCode": payload.zipCode,
+                "summary": summary,
+            }
+        },
+        "agentCommentary": agent_response
+    }
 
 
 # Example usage within a uagents agent message handler:

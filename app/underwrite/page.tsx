@@ -13,6 +13,8 @@ import type {
   PropertyInput,
   GlobalAssumptions,
   AnalyzePropertiesResponse,
+  AgentCommentaryResponse,
+  AgentCommentary,
 } from "@/lib/types";
 import { DEFAULT_ASSUMPTIONS, createEmptyProperty } from "@/lib/mock-data";
 import type { MapProperty } from "@/lib/map-types";
@@ -28,6 +30,9 @@ export default function UnderwritePage() {
   const [properties, setProperties] = useState<PropertyInput[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalyzePropertiesResponse | null>(
+    null
+  );
+  const [aiCommentary, setAiCommentary] = useState<AgentCommentary | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
@@ -133,6 +138,7 @@ export default function UnderwritePage() {
     setError(null);
     setIsAnalyzing(true);
     setResults(null);
+    setAiCommentary(null);
 
     try {
       const response = await fetch("/api/analyze", {
@@ -151,8 +157,9 @@ export default function UnderwritePage() {
         throw new Error("Analysis failed. Please try again.");
       }
 
-      const data: AnalyzePropertiesResponse = await response.json();
-      setResults(data);
+      const data: AgentCommentaryResponse = await response.json();
+      setResults(data.analysis);
+      setAiCommentary(data.agentCommentary);
     } catch {
       setError("Unable to complete analysis. Please try again.");
     } finally {
@@ -258,7 +265,7 @@ export default function UnderwritePage() {
 
             {/* Right Column - Results */}
             <div className="lg:sticky lg:top-24 lg:self-start">
-              <ResultsPanel results={results} isLoading={isAnalyzing} />
+              <ResultsPanel results={results} aiCommentary={aiCommentary} isLoading={isAnalyzing} />
             </div>
           </div>
         </div>

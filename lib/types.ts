@@ -86,6 +86,12 @@ export type AnalyzePropertiesResponse = {
   };
 };
 
+// Agent commentary response with analysis results
+export type AgentCommentaryResponse = {
+  analysis: AnalyzePropertiesResponse;
+  agentCommentary: AgentCommentary;
+};
+
 // Agent types for UI display
 export type AgentType = 
   | "cash-flow"

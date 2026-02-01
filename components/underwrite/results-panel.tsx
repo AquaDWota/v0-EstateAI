@@ -21,17 +21,18 @@ import {
   BarChart3,
   Bot,
 } from "lucide-react";
-import type { AnalyzePropertiesResponse, PropertyAnalysisResult } from "@/lib/types";
+import type { AnalyzePropertiesResponse, PropertyAnalysisResult, AgentCommentary } from "@/lib/types";
 import { PropertyDetailModal } from "./property-detail-modal";
 import { ComparisonTable } from "./comparison-table";
 import { AgentBadges } from "./agent-badges";
 
 interface ResultsPanelProps {
   results: AnalyzePropertiesResponse | null;
+  aiCommentary: AgentCommentary | null;
   isLoading: boolean;
 }
 
-export function ResultsPanel({ results, isLoading }: ResultsPanelProps) {
+export function ResultsPanel({ results, aiCommentary, isLoading }: ResultsPanelProps) {
   const [selectedProperty, setSelectedProperty] =
     useState<PropertyAnalysisResult | null>(null);
 
@@ -156,6 +157,58 @@ export function ResultsPanel({ results, isLoading }: ResultsPanelProps) {
           <p className="text-sm text-muted-foreground">{results.meta.summary}</p>
         </CardContent>
       </Card>
+
+      {/* AI Commentary Section */}
+      {aiCommentary && (
+        <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Bot className="h-5 w-5 text-primary" />
+              AI Agent Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h4 className="mb-2 text-sm font-semibold text-foreground">Overall Assessment</h4>
+              <p className="text-sm text-muted-foreground">{aiCommentary.overallSummary}</p>
+            </div>
+            
+            <div className="grid gap-3">
+              <div>
+                <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cash Flow</h4>
+                <p className="text-sm text-foreground">{aiCommentary.cashFlowSummary}</p>
+              </div>
+              
+              <div>
+                <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Risk Assessment</h4>
+                <p className="text-sm text-foreground">{aiCommentary.riskSummary}</p>
+              </div>
+              
+              <div>
+                <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Market Timing</h4>
+                <p className="text-sm text-foreground">{aiCommentary.marketTimingSummary}</p>
+              </div>
+              
+              <div>
+                <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Renovation Insights</h4>
+                <p className="text-sm text-foreground">{aiCommentary.renovationSummary}</p>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="mb-2 text-sm font-semibold text-foreground">Key Takeaways</h4>
+              <ul className="space-y-2">
+                {aiCommentary.keyBullets.map((bullet, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                    {bullet}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Best Deal Highlight */}
       {bestDeal && (

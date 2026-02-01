@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type {
   AnalyzePropertiesRequest,
-  AnalyzePropertiesResponse,
+  AgentCommentaryResponse,
 } from "@/lib/types";
 
 export async function POST(request: Request) {
@@ -25,8 +25,10 @@ export async function POST(request: Request) {
     
     const backendUrl =
       process.env.BACKEND_URL?.replace(/\/$/, "") || "http://localhost:8000";
+    
+    // Call the new agent-commentary endpoint that includes AI commentary
     const backendResponse = await fetch(
-      `${backendUrl}/analyze-properties`,
+      `${backendUrl}/api/agent-commentary`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,7 +48,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const response: AnalyzePropertiesResponse = await backendResponse.json();
+    const response: AgentCommentaryResponse = await backendResponse.json();
     return NextResponse.json(response);
   } catch (error) {
     console.error("Analysis error:", error);

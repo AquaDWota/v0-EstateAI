@@ -51,7 +51,7 @@ export default function MapPage() {
             center: { lat: coords.lat, lng: coords.lng },
             zoom: 13,
           });
-          const properties = generatePropertiesForZip(zip, 20);
+          const properties = getPropertiesByZipCode(zip);
           setAllProperties(properties);
           return;
         }

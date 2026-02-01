@@ -160,14 +160,14 @@ export function MapResultsPanel({
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    {results.meta.summary}
+                    {results.analysis.meta.summary}
                   </p>
                 </CardContent>
               </Card>
 
               {/* Best Deal */}
               {(() => {
-                const sortedResults = [...results.results].sort(
+                const sortedResults = [...results.analysis.results].sort(
                   (a, b) => b.overallScore - a.overallScore
                 );
                 const bestDeal = sortedResults[0];

@@ -6,10 +6,9 @@ type Params = { params: { id: string } };
 export async function GET(request: Request, { params }: Params) {
   try {
     const backendUrl =
-      process.env.BACKEND_URL?.replace(/\/$/, "") || "http://localhost:8000";
-    const response = await fetch(
-      `${backendUrl}/api/properties/${params.id}`
-    );
+      process.env.BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000";
+    const { id } = await params;
+    const response = await fetch(`${backendUrl}/api/properties/${id}`);
 
     if (!response.ok) {
       const errorText = await response.text();

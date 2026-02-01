@@ -5,10 +5,10 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const backendUrl =
-      process.env.BACKEND_URL?.replace(/\/$/, "") || "http://localhost:8000";
+      process.env.BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000";
 
     const response = await fetch(
-      `${backendUrl}/api/properties?${searchParams.toString()}`
+      `${backendUrl}/api/properties/${searchParams.toString()}`
     );
 
     if (!response.ok) {

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
-
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
@@ -12,18 +10,11 @@ from .logic import analyze_properties
 from .models import (
     AnalyzePropertiesRequest,
     AnalyzePropertiesResponse,
-    MapProperty,
 )
 
 
 app = FastAPI(title="New England Deal Underwriter API")
 mongo = get_properties_collection()
-
-def _collection():
-    try:
-        return get_properties_collection()
-    except MongoSettingsError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.exception_handler(HTTPException)
@@ -58,49 +49,59 @@ def analyze_properties_route(payload: AnalyzePropertiesRequest):
         meta={"zipCode": payload.zipCode, "summary": summary},
     )
 
-
-@app.get("/api/properties", response_model=list[MapProperty])
-def list_properties(
-    zipCode: Optional[str] = None,
-    centerLat: Optional[float] = None,
-    centerLng: Optional[float] = None,
-    count: int = Query(50, ge=1, le=500),
-    priceMin: Optional[float] = None,
-    priceMax: Optional[float] = None,
-    beds: Optional[int] = None,
-    baths: Optional[int] = None,
-    homeType: Optional[str] = None,
-):
-    collection = _collection()
-    query: dict = {}
-
-    if zipCode:
-        query["zipCode"] = zipCode
-    if priceMin is not None or priceMax is not None:
-        query["listPrice"] = {}
-        if priceMin is not None:
-            query["listPrice"]["$gte"] = priceMin
-        if priceMax is not None:
-            query["listPrice"]["$lte"] = priceMax
-    if beds is not None:
-        query["bedrooms"] = {"$gte": beds}
-    if baths is not None:
-        query["bathrooms"] = {"$gte": baths}
-    if homeType:
-        property_types = [value.strip() for value in homeType.split(",") if value.strip()]
-        if property_types:
-            query["propertyType"] = {"$in": property_types}
-
-    # centerLat/centerLng are accepted for compatibility; ignoring without geospatial index.
-    docs = list(collection.find(query, {"_id": 0}).limit(count))
-    return docs
-
-
-@app.get("/api/properties/{listing_id}", response_model=MapProperty)
-def get_property(listing_id: str):
-    collection = _collection()
-    listing = collection.find_one({"id": listing_id}, {"_id": 0})
-    if not listing:
-        raise HTTPException(status_code=404, detail="Property not found.")
-    return listing
-
+@app.get("/api/properties/{zip_code}")
+def get_properties(zip_code: str):
+    print(zip_code)
+    return [
+      {
+        "id": "prop-0001",
+        "address": "121 Summer Street",
+        "zipCode": "06114",
+        "lat": 41.721884,
+        "lng": -72.694396,
+        "listPrice": 915888,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "sqft": 3188,
+        "propertyType": "condo",
+        "yearBuilt": 2006,
+        "estimatedRent": 6577,
+        "propertyTaxPerYear": 10285,
+        "insurancePerYear": 4107,
+        "hoaPerYear": 6726
+      },
+      {
+        "id": "prop-0002",
+        "address": "331 Hill Road",
+        "zipCode": "02125",
+        "lat": 42.315568,
+        "lng": -71.06041,
+        "listPrice": 1233536,
+        "bedrooms": 5,
+        "bathrooms": 3,
+        "sqft": 2492,
+        "propertyType": "townhouse",
+        "yearBuilt": 1983,
+        "estimatedRent": 7681,
+        "propertyTaxPerYear": 15747,
+        "insurancePerYear": 6089,
+        "hoaPerYear": 6097
+      },
+      {
+        "id": "prop-0003",
+        "address": "117 School Street",
+        "zipCode": "02136",
+        "lat": 41.783125,
+        "lng": -71.425447,
+        "listPrice": 1621125,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "sqft": 3298,
+        "propertyType": "single-family",
+        "yearBuilt": 1950,
+        "estimatedRent": 7991,
+        "propertyTaxPerYear": 16378,
+        "insurancePerYear": 6153,
+        "hoaPerYear": 0
+      },
+    ]

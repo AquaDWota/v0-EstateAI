@@ -49,47 +49,53 @@ export default function AboutPage() {
             </div>
 
             <div className="mt-12 grid gap-8 md:grid-cols-3">
-              <Card className="border-border bg-background">
-                <CardHeader>
-                  <Users className="mb-2 h-8 w-8 text-accent" />
-                  <CardTitle>New Investors</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    First-time rental property buyers looking to analyze deals
-                    with professional-grade metrics and understand investment
-                    fundamentals.
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-background h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardHeader>
+                    <Users className="mb-2 h-8 w-8 text-accent" />
+                    <CardTitle>New Investors</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      First-time rental property buyers looking to analyze deals
+                      with professional-grade metrics and understand investment
+                      fundamentals.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card className="border-border bg-background">
-                <CardHeader>
-                  <Building2 className="mb-2 h-8 w-8 text-accent" />
-                  <CardTitle>Experienced Investors</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Portfolio owners who need to quickly compare multiple
-                    properties and identify the best opportunities in their
-                    target markets.
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-background h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardHeader>
+                    <Building2 className="mb-2 h-8 w-8 text-accent" />
+                    <CardTitle>Experienced Investors</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      Portfolio owners who need to quickly compare multiple
+                      properties and identify the best opportunities in their
+                      target markets.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card className="border-border bg-background">
-                <CardHeader>
-                  <BarChart3 className="mb-2 h-8 w-8 text-accent" />
-                  <CardTitle>Brokers & Agents</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Real estate professionals who want to provide clients with
-                    detailed investment analysis and data-driven
-                    recommendations.
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-background h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardHeader>
+                    <BarChart3 className="mb-2 h-8 w-8 text-accent" />
+                    <CardTitle>Brokers & Agents</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      Real estate professionals who want to provide clients with
+                      detailed investment analysis and data-driven
+                      recommendations.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </section>
@@ -109,115 +115,127 @@ export default function AboutPage() {
             </div>
 
             <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="border-border bg-card">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-                      <DollarSign className="h-5 w-5 text-foreground" />
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-card h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+                        <DollarSign className="h-5 w-5 text-foreground" />
+                      </div>
+                      <CardTitle className="text-lg">Cash-Flow Agent</CardTitle>
                     </div>
-                    <CardTitle className="text-lg">Cash-Flow Agent</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Analyzes income potential, operating expenses, and monthly
-                    cash flow projections. Evaluates rent-to-price ratios and
-                    identifies opportunities to optimize returns.
-                  </p>
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      Analyzes income potential, operating expenses, and monthly
+                      cash flow projections. Evaluates rent-to-price ratios and
+                      identifies opportunities to optimize returns.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card className="border-border bg-card">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-                      <Shield className="h-5 w-5 text-foreground" />
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-card h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+                        <Shield className="h-5 w-5 text-foreground" />
+                      </div>
+                      <CardTitle className="text-lg">Risk Agent</CardTitle>
                     </div>
-                    <CardTitle className="text-lg">Risk Agent</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Evaluates investment risk factors including vacancy
-                    exposure, expense ratios, and return volatility. Assigns
-                    risk ratings and identifies potential red flags.
-                  </p>
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      Evaluates investment risk factors including vacancy
+                      exposure, expense ratios, and return volatility. Assigns
+                      risk ratings and identifies potential red flags.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card className="border-border bg-card">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-                      <Clock className="h-5 w-5 text-foreground" />
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-card h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+                        <Clock className="h-5 w-5 text-foreground" />
+                      </div>
+                      <CardTitle className="text-lg">
+                        Market-Timing Agent
+                      </CardTitle>
                     </div>
-                    <CardTitle className="text-lg">
-                      Market-Timing Agent
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Assesses whether current pricing supports immediate
-                    acquisition or if waiting for better terms would be
-                    advisable. Provides buy/watch/avoid recommendations.
-                  </p>
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      Assesses whether current pricing supports immediate
+                      acquisition or if waiting for better terms would be
+                      advisable. Provides buy/watch/avoid recommendations.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card className="border-border bg-card">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-                      <Wrench className="h-5 w-5 text-foreground" />
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-card h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+                        <Wrench className="h-5 w-5 text-foreground" />
+                      </div>
+                      <CardTitle className="text-lg">Renovation Agent</CardTitle>
                     </div>
-                    <CardTitle className="text-lg">Renovation Agent</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Reviews value-add potential through renovations. Compares
-                    renovation budgets against projected ARV increases to
-                    evaluate improvement ROI.
-                  </p>
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      Reviews value-add potential through renovations. Compares
+                      renovation budgets against projected ARV increases to
+                      evaluate improvement ROI.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card className="border-border bg-card">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-                      <FileText className="h-5 w-5 text-foreground" />
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-card h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+                        <FileText className="h-5 w-5 text-foreground" />
+                      </div>
+                      <CardTitle className="text-lg">Summary Agent</CardTitle>
                     </div>
-                    <CardTitle className="text-lg">Summary Agent</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Synthesizes insights from all other agents into a cohesive
-                    recommendation. Generates the final score and provides
-                    actionable guidance.
-                  </p>
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      Synthesizes insights from all other agents into a cohesive
+                      recommendation. Generates the final score and provides
+                      actionable guidance.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card className="border-2 border-accent bg-accent/5">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
-                      <Bot className="h-5 w-5 text-accent-foreground" />
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-card h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+                        <Bot className="h-5 w-5 text-foreground" />
+                      </div>
+                      <CardTitle className="text-lg">Combined Analysis</CardTitle>
                     </div>
-                    <CardTitle className="text-lg">Combined Analysis</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    All agents work together to rank your properties, highlight
-                    the best opportunities, and provide clear reasoning you can
-                    act on.
-                  </p>
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      All agents work together to rank your properties, highlight
+                      the best opportunities, and provide clear reasoning you can
+                      act on.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </section>
@@ -295,15 +313,15 @@ export default function AboutPage() {
         <section className="py-16">
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold tracking-tight text-foreground">
-              Ready to Analyze Your Next Deal?
+              Ready to Analyze Your Next Property?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-              Start comparing New England rental properties in minutes.
+              Start comparing New England properties in minutes.
             </p>
             <div className="mt-8">
               <Button size="lg" asChild>
-                <Link href="/underwrite">
-                  Start Underwriting
+                <Link href="/map">
+                  Start Exploring
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

@@ -27,7 +27,7 @@ export default function HomePage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (address.trim()) {
-      router.push(`/underwrite?address=${encodeURIComponent(address)}`);
+      router.push(`/map?address=${encodeURIComponent(address)}`);
     }
   };
 
@@ -85,7 +85,7 @@ export default function HomePage() {
                 <div className="mx-auto max-w-2xl">
                   <div className="group relative">
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary to-accent opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-20" />
-                    <div className="relative flex items-center gap-3 rounded-2xl border-2 border-border bg-card p-3 shadow-2xl transition-all focus-within:border-primary focus-within:shadow-primary/20 sm:p-4">
+                    <div className="relative flex items-center gap-3 rounded-2xl bg-card p-3 transition-all sm:p-4">
                       <MapPin className="h-6 w-6 flex-shrink-0 text-muted-foreground sm:h-7 sm:w-7" />
                       <Input
                         type="text"
@@ -108,7 +108,7 @@ export default function HomePage() {
                     Or{" "}
                     <Link
                       href="/map"
-                      className="font-medium text-primary underline-offset-4 hover:underline"
+                      className="font-medium text-primary underline decoration-solid underline-offset-4 hover:underline"
                     >
                       browse the map
                     </Link>{" "}
@@ -216,44 +216,50 @@ export default function HomePage() {
             </div>
 
             <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="border-border bg-card">
-                <CardContent className="p-6">
-                  <BarChart3 className="mb-4 h-8 w-8 text-accent" />
-                  <h3 className="text-lg font-semibold text-foreground">
-                    Comprehensive Metrics
-                  </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Cap rate, cash-on-cash return, NOI, and 5-year ROI
-                    calculated automatically for each property.
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-card h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardContent className="p-6">
+                    <BarChart3 className="mb-4 h-8 w-8 text-accent" />
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Comprehensive Metrics
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Cap rate, cash-on-cash return, NOI, and 5-year ROI
+                      calculated automatically for each property.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card className="border-border bg-card">
-                <CardContent className="p-6">
-                  <Brain className="mb-4 h-8 w-8 text-accent" />
-                  <h3 className="text-lg font-semibold text-foreground">
-                    AI Underwriters
-                  </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Multiple AI agents analyze cash flow, risk, market timing,
-                    and renovation impact for each deal.
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-card h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardContent className="p-6">
+                    <Brain className="mb-4 h-8 w-8 text-accent" />
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Multi-Agentic Approach
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Multiple AI agents analyze cash flow, risk, market timing,
+                      and renovation impact for each deal.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card className="border-border bg-card">
-                <CardContent className="p-6">
-                  <CheckCircle2 className="mb-4 h-8 w-8 text-accent" />
-                  <h3 className="text-lg font-semibold text-foreground">
-                    Clear Recommendations
-                  </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Get actionable buy/watch/avoid signals with plain-English
-                    explanations of the reasoning.
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="transform transition-transform duration-300 hover:-translate-y-2">
+                <Card className="border-2 border-border bg-card h-full transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg cursor-pointer">
+                  <CardContent className="p-6">
+                    <CheckCircle2 className="mb-4 h-8 w-8 text-accent" />
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Clear Recommendations
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Get actionable buy/watch/avoid signals with plain-English
+                      explanations of the reasoning.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </section>
@@ -262,10 +268,10 @@ export default function HomePage() {
         <section className="border-t border-border bg-primary py-16">
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold tracking-tight text-primary-foreground">
-              Ready to Find Your Next Deal?
+              Ready to Find Your Next Property?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-lg text-primary-foreground/80">
-              Start analyzing New England rental properties today. No account
+              Start analyzing New England properties today. No account
               required.
             </p>
             <div className="mt-8">
@@ -275,8 +281,8 @@ export default function HomePage() {
                 asChild
                 className="min-w-[200px] cursor-pointer"
               >
-                <Link href="/underwrite">
-                  Start Underwriting
+                <Link href="/map">
+                  Start Exploring
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

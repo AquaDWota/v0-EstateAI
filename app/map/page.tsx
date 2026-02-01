@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback, use, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { MapFiltersBar } from "@/components/map/map-filters";
@@ -14,7 +14,7 @@ import { DEFAULT_ASSUMPTIONS } from "@/lib/mock-data";
 import dynamic from "next/dynamic";
 import { filterProperties } from "@/components/map/property-manager";
 
-export default function MapPage() {
+function MapPageContent() {
   const searchParams = useSearchParams();
   const addressParam = searchParams.get("address");
   const [zipCode, setZipCode] = useState(addressParam || "");
@@ -228,5 +228,13 @@ export default function MapPage() {
         </div> */}
       </div>
     </div>
+  );
+}
+
+export default function MapPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MapPageContent />
+    </Suspense>
   );
 }

@@ -46,3 +46,58 @@ def analyze_properties_route(payload: AnalyzePropertiesRequest):
         meta={"zipCode": payload.zipCode, "summary": summary},
     )
 
+@app.get("/api/properties/{zip_code}")
+def get_properties(zip_code: str):
+    return [
+      {
+        "id": "prop-0001",
+        "address": "121 Summer Street",
+        "zipCode": "06114",
+        "lat": 41.721884,
+        "lng": -72.694396,
+        "listPrice": 915888,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "sqft": 3188,
+        "propertyType": "condo",
+        "yearBuilt": 2006,
+        "estimatedRent": 6577,
+        "propertyTaxPerYear": 10285,
+        "insurancePerYear": 4107,
+        "hoaPerYear": 6726
+      },
+      {
+        "id": "prop-0002",
+        "address": "331 Hill Road",
+        "zipCode": "02125",
+        "lat": 42.315568,
+        "lng": -71.06041,
+        "listPrice": 1233536,
+        "bedrooms": 5,
+        "bathrooms": 3,
+        "sqft": 2492,
+        "propertyType": "townhouse",
+        "yearBuilt": 1983,
+        "estimatedRent": 7681,
+        "propertyTaxPerYear": 15747,
+        "insurancePerYear": 6089,
+        "hoaPerYear": 6097
+      },
+      {
+        "id": "prop-0003",
+        "address": "117 School Street",
+        "zipCode": "02136",
+        "lat": 41.783125,
+        "lng": -71.425447,
+        "listPrice": 1621125,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "sqft": 3298,
+        "propertyType": "single-family",
+        "yearBuilt": 1950,
+        "estimatedRent": 7991,
+        "propertyTaxPerYear": 16378,
+        "insurancePerYear": 6153,
+        "hoaPerYear": 0
+      },
+    ]

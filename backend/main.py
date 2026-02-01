@@ -45,7 +45,15 @@ def analyze_properties_route(payload: AnalyzePropertiesRequest):
     )
     return AnalyzePropertiesResponse(
         results=results,
-        meta={"zipCode": payload.zipCode, "summary": summary},
+        meta={
+            "zipCode": payload.zipCode,
+            "summary": summary,
+            "aiPayload": {
+                "input": payload.model_dump(),
+                "results": [item.model_dump() for item in results],
+                "summary": summary,
+            },
+        },
     )
 
 @app.get("/api/properties/{zip_code}")

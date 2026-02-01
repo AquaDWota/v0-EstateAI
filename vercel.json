@@ -1,13 +1,7 @@
 {
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install && pip install -r backend/requirements.txt",
-  "functions": {
-    "api/backend/index.py": {
-      "runtime": "python3.9",
-      "maxDuration": 30
-    }
-  },
+  "installCommand": "npm install",
   "rewrites": [
     {
       "source": "/backend-api/:path*",

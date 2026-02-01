@@ -51,9 +51,8 @@ vercel --prod
 
 The `vercel.json` configuration handles routing:
 
-- `/api/agent-commentary` → Python serverless function
-- `/analyze-properties` → Python serverless function  
-- `/api/properties/:zip_code` → Python serverless function
+- All `/backend-api/*` requests → Python serverless function at `/api/backend/index`
+- FastAPI app handles internal routing (`/api/agent-commentary`, `/api/properties/*`, etc.)
 - All other routes → Next.js
 
 ### Development vs Production
@@ -74,8 +73,8 @@ cd backend && uvicorn main:app --reload --port 8000
 
 ## Key Files
 
-- `vercel.json` - Routing and function configuration
-- `api/backend/*.py` - Python serverless function handlers
+- `vercel.json` - Routing configuration (routes `/backend-api/*` to Python)
+- `api/backend/index.py` - Single Python serverless function handler
 - `backend/requirements.txt` - Python dependencies
 - `.env.example` - Required environment variables
 

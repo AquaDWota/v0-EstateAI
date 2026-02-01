@@ -4,14 +4,15 @@ import type { MapProperty } from "@/lib/map-types";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    // In production (Vercel), use relative URL for serverless functions
+    const zipCode = searchParams.get('zipCode') || searchParams.toString();
+    // In production (Vercel), use /backend-api prefix for serverless functions
     // In development, use localhost backend
     const backendUrl = process.env.VERCEL_ENV 
-      ? "" // Use relative path in Vercel
+      ? "/backend-api" // Use Vercel serverless path
       : (process.env.BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000");
 
     const response = await fetch(
-      `${backendUrl}/api/properties/${searchParams.toString()}`
+      `${backendUrl}/api/properties/${zipCode}`
     );
 
     if (!response.ok) {

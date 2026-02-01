@@ -2,27 +2,16 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install && pip install -r backend/requirements.txt",
+  "functions": {
+    "api/backend/index.py": {
+      "runtime": "python3.9",
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    },
-    {
-      "source": "/analyze-properties",
-      "destination": "/api/backend/analyze-properties"
-    },
-    {
-      "source": "/api/agent-commentary",
-      "destination": "/api/backend/agent-commentary"
-    },
-    {
-      "source": "/api/properties/:zip_code",
-      "destination": "/api/backend/properties/:zip_code"
+      "source": "/backend-api/:path*",
+      "destination": "/api/backend/index"
     }
-  ],
-  "functions": {
-    "api/backend/*.py": {
-      "runtime": "python3.9"
-    }
-  }
+  ]
 }

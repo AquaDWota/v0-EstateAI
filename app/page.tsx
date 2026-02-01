@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ArrowRight,
@@ -10,48 +15,134 @@ import {
   Building,
   CheckCircle2,
   TrendingUp,
+  Search,
+  MapPin,
+  Sparkles,
 } from "lucide-react";
 
 export default function HomePage() {
+  const [address, setAddress] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (address.trim()) {
+      router.push(`/underwrite?address=${encodeURIComponent(address)}`);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-background py-20 sm:py-32">
+        {/* Hero Section with Address Input */}
+        <section className="relative overflow-hidden py-20 sm:py-32 lg:py-40">
+          {/* Map Background Layer with gradient overlay */}
+          <div className="absolute inset-0 -z-20">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2948.3563224020837!2d-71.05773268455701!3d42.36008797918487!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89e370a5cb30cc5f%3A0xc53a8e6489686c87!2sBoston%2C%20MA!5e0!3m2!1sen!2sus!4v1234567890"
+              width="100%"
+              height="100%"
+              style={{ border: 0, filter: "grayscale(100%) brightness(0.4)" }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+
+          {/* Gradient overlay for smooth blend */}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/90 via-background/55 to-background/90" />
+
+          {/* Background decoration */}
+          <div className="absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute left-1/2 top-0 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-accent/10 blur-3xl" />
+            <div className="absolute right-1/4 top-1/4 h-[400px] w-[400px] rounded-full bg-primary/10 blur-3xl" />
+          </div>
+
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground">
-                <span className="h-2 w-2 rounded-full bg-accent" />
+            <div className="mx-auto max-w-4xl text-center">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/50 bg-accent/10 px-4 py-1.5 text-sm font-medium text-color-black backdrop-blur-sm">
+                <Sparkles className="h-3.5 w-3.5" />
                 AI-Powered Investment Analysis
               </div>
 
-              <h1 className="text-pretty text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                Smarter Real Estate Decisions for New England
+              <h1 className="text-balance text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+                Analyze Any Property
+                <br />
+                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  In Seconds
+                </span>
               </h1>
 
-              <p className="mt-6 text-pretty text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                Analyze rental properties, compare deals, and get AI-driven
-                recommendations. Built specifically for New England investors
-                and brokers.
+              <p className="mt-6 text-balance text-xl leading-relaxed text-bold-foreground sm:text-2xl">
+                Enter an address and get instant AI-powered investment insights
+                for New England real estate
               </p>
 
-              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button size="lg" asChild className="min-w-[200px]">
-                  <Link href="/underwrite">
-                    Start Underwriting
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  asChild
-                  className="min-w-[200px] bg-transparent"
-                >
-                  <Link href="/about">Learn How It Works</Link>
-                </Button>
+              {/* Address Search Input */}
+              <form onSubmit={handleSearch} className="mt-12">
+                <div className="mx-auto max-w-2xl">
+                  <div className="group relative">
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary to-accent opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-20" />
+                    <div className="relative flex items-center gap-3 rounded-2xl border-2 border-border bg-card p-3 shadow-2xl transition-all focus-within:border-primary focus-within:shadow-primary/20 sm:p-4">
+                      <MapPin className="h-6 w-6 flex-shrink-0 text-muted-foreground sm:h-7 sm:w-7" />
+                      <Input
+                        type="text"
+                        placeholder="Enter property address (e.g., 123 Main St, Boston, MA)"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="flex-1 border-0 bg-transparent text-base placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-lg"
+                      />
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="h-12 flex-shrink-0 gap-2 px-6 sm:px-8"
+                      >
+                        <Search className="h-5 w-5" />
+                        <span className="hidden sm:inline">Analyze</span>
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    Or{" "}
+                    <Link
+                      href="/map"
+                      className="font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                      browse the map
+                    </Link>{" "}
+                    to explore properties in your area
+                  </p>
+                </div>
+              </form>
+
+              {/* Quick Stats */}
+              <div className="mt-16 grid grid-cols-3 gap-6 sm:gap-8">
+                <div className="rounded-xl border border-border bg-card/50 p-4 backdrop-blur-sm sm:p-6">
+                  <div className="text-3xl font-bold text-foreground sm:text-4xl">
+                    10K+
+                  </div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    Properties Analyzed
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card/50 p-4 backdrop-blur-sm sm:p-6">
+                  <div className="text-3xl font-bold text-foreground sm:text-4xl">
+                    6
+                  </div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    States Covered
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card/50 p-4 backdrop-blur-sm sm:p-6">
+                  <div className="text-3xl font-bold text-foreground sm:text-4xl">
+                    AI
+                  </div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    Powered Analysis
+                  </div>
+                </div>
               </div>
             </div>
           </div>

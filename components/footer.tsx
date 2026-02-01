@@ -7,9 +7,9 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-foreground" />
+            {/* <Building2 className="h-6 w-6 text-foreground" /> */}
             <span className="text-base font-semibold text-foreground">
-              NE Deal Underwriter
+              Estate.AI
             </span>
           </div>
 
@@ -20,12 +20,12 @@ export function Footer() {
             >
               Home
             </Link>
-            <Link
+            {/* <Link
               href="/underwrite"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               Underwrite
-            </Link>
+            </Link> */}
             <Link
               href="/about"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"

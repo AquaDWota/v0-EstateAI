@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/header";
 import { MapFiltersBar } from "@/components/map/map-filters";
 import { MapView } from "@/components/map/map-view";
@@ -8,12 +9,19 @@ import { PropertyPanel } from "@/components/map/property-panel";
 import { MapResultsPanel } from "@/components/map/results-panel";
 import type { MapProperty, MapFilters, MapViewState } from "@/lib/map-types";
 import { ZIP_COORDINATES, DEFAULT_CENTER, DEFAULT_ZOOM } from "@/lib/map-types";
+<<<<<<< HEAD
 import { filterProperties } from "@/lib/map-mock-data";
+=======
+>>>>>>> 0ab835d29d7e662f98ddd6c1ddeb23a72cbe8be3
 import type { PropertyInput, AnalyzePropertiesResponse } from "@/lib/types";
 import { DEFAULT_ASSUMPTIONS } from "@/lib/mock-data";
+import dynamic from "next/dynamic";
+import { getPropertiesByZipCode, filterProperties } from "@/components/map/property-manager";
 
 export default function MapPage() {
-  const [zipCode, setZipCode] = useState("");
+  const searchParams = useSearchParams();
+  const addressParam = searchParams.get("address");
+  const [zipCode, setZipCode] = useState(addressParam || "");
   const [filters, setFilters] = useState<MapFilters>({
     priceMin: 100000,
     priceMax: 2000000,
@@ -60,8 +68,27 @@ export default function MapPage() {
     []
   );
 
-  // Try to get user's location on mount
+  // Try to get user's location on mount or use address parameter
   useEffect(() => {
+    // If address parameter exists, try to use it
+    if (addressParam) {
+      // Extract zip code if it's in the address (5 digits)
+      const zipMatch = addressParam.match(/\b\d{5}\b/);
+      if (zipMatch) {
+        const zip = zipMatch[0];
+        const coords = ZIP_COORDINATES[zip];
+        if (coords) {
+          setViewState({
+            center: { lat: coords.lat, lng: coords.lng },
+            zoom: 13,
+          });
+          const properties = generatePropertiesForZip(zip, 20);
+          setAllProperties(properties);
+          return;
+        }
+      }
+    }
+
     if (typeof navigator !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -70,6 +97,7 @@ export default function MapPage() {
             center: { lat: latitude, lng: longitude },
             zoom: DEFAULT_ZOOM,
           });
+<<<<<<< HEAD
           fetchProperties({ centerLat: latitude, centerLng: longitude, count: 200 });
         },
         () => {
@@ -82,6 +110,12 @@ export default function MapPage() {
       fetchProperties({ zipCode: "02134", count: 200 });
     }
   }, [fetchProperties]);
+=======
+        },
+      );
+    }   
+  }, [addressParam]);
+>>>>>>> 0ab835d29d7e662f98ddd6c1ddeb23a72cbe8be3
 
   // Handle ZIP code submission
   const handleZipSubmit = useCallback(() => {
@@ -91,7 +125,12 @@ export default function MapPage() {
         center: { lat: coords.lat, lng: coords.lng },
         zoom: 13,
       });
+<<<<<<< HEAD
       fetchProperties({ zipCode, count: 200 });
+=======
+      const properties = getPropertiesByZipCode(zipCode);
+      setAllProperties(properties);
+>>>>>>> 0ab835d29d7e662f98ddd6c1ddeb23a72cbe8be3
       setSelectedIds([]);
       setShowResults(false);
       setAnalysisResults(null);
@@ -153,6 +192,8 @@ export default function MapPage() {
       setIsAnalyzing(false);
     }
   }, []);
+
+  const MapView = dynamic(() => import('@/components/map/map-view').then(mod => mod.MapView), { ssr: false });
 
   return (
     <div className="flex h-screen flex-col bg-background overflow-hidden">

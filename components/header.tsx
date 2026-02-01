@@ -11,50 +11,28 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
-          <Building2 className="h-7 w-7 text-foreground" />
-          <span className="text-lg font-semibold text-foreground">
-            NE Deal Underwriter
+          {/* <Building2 className="h-9 w-9 text-foreground" /> */}
+          <span className="text-3xl font-bold text-foreground">
+            Estate.AI
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-10 md:flex">
           <Link
             href="/"
             className={cn(
-              "text-sm font-medium transition-colors hover:text-foreground",
+              "text-xl font-semibold transition-colors hover:text-foreground",
               pathname === "/" ? "text-foreground" : "text-muted-foreground"
             )}
           >
             Home
           </Link>
           <Link
-            href="/underwrite"
-            className={cn(
-              "text-sm font-medium transition-colors hover:text-foreground",
-              pathname === "/underwrite"
-                ? "text-foreground"
-                : "text-muted-foreground"
-            )}
-          >
-            Underwrite
-          </Link>
-          <Link
-            href="/map"
-            className={cn(
-              "text-sm font-medium transition-colors hover:text-foreground",
-              pathname === "/map"
-                ? "text-foreground"
-                : "text-muted-foreground"
-            )}
-          >
-            Map Search
-          </Link>
-          <Link
             href="/about"
             className={cn(
-              "text-sm font-medium transition-colors hover:text-foreground",
+              "text-xl font-semibold transition-colors hover:text-foreground",
               pathname === "/about"
                 ? "text-foreground"
                 : "text-muted-foreground"
@@ -65,8 +43,8 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button asChild>
-            <Link href="/underwrite">Start Underwriting</Link>
+          <Button asChild size="lg" className="text-base font-semibold">
+            <Link href="/map">Explore Properties</Link>
           </Button>
         </div>
       </div>

@@ -9,10 +9,6 @@ import { PropertyPanel } from "@/components/map/property-panel";
 import { MapResultsPanel } from "@/components/map/results-panel";
 import type { MapProperty, MapFilters, MapViewState } from "@/lib/map-types";
 import { ZIP_COORDINATES, DEFAULT_CENTER, DEFAULT_ZOOM } from "@/lib/map-types";
-<<<<<<< HEAD
-import { filterProperties } from "@/lib/map-mock-data";
-=======
->>>>>>> 0ab835d29d7e662f98ddd6c1ddeb23a72cbe8be3
 import type { PropertyInput, AnalyzePropertiesResponse } from "@/lib/types";
 import { DEFAULT_ASSUMPTIONS } from "@/lib/mock-data";
 import dynamic from "next/dynamic";
@@ -82,7 +78,7 @@ export default function MapPage() {
             center: { lat: coords.lat, lng: coords.lng },
             zoom: 13,
           });
-          const properties = generatePropertiesForZip(zip, 20);
+          const properties = getPropertiesByZipCode(zip);
           setAllProperties(properties);
           return;
         }
@@ -97,7 +93,6 @@ export default function MapPage() {
             center: { lat: latitude, lng: longitude },
             zoom: DEFAULT_ZOOM,
           });
-<<<<<<< HEAD
           fetchProperties({ centerLat: latitude, centerLng: longitude, count: 200 });
         },
         () => {
@@ -110,12 +105,6 @@ export default function MapPage() {
       fetchProperties({ zipCode: "02134", count: 200 });
     }
   }, [fetchProperties]);
-=======
-        },
-      );
-    }   
-  }, [addressParam]);
->>>>>>> 0ab835d29d7e662f98ddd6c1ddeb23a72cbe8be3
 
   // Handle ZIP code submission
   const handleZipSubmit = useCallback(() => {
@@ -125,12 +114,9 @@ export default function MapPage() {
         center: { lat: coords.lat, lng: coords.lng },
         zoom: 13,
       });
-<<<<<<< HEAD
       fetchProperties({ zipCode, count: 200 });
-=======
       const properties = getPropertiesByZipCode(zipCode);
       setAllProperties(properties);
->>>>>>> 0ab835d29d7e662f98ddd6c1ddeb23a72cbe8be3
       setSelectedIds([]);
       setShowResults(false);
       setAnalysisResults(null);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/header";
 import { MapFiltersBar } from "@/components/map/map-filters";
 import { MapView } from "@/components/map/map-view";
@@ -13,7 +14,9 @@ import type { PropertyInput, AnalyzePropertiesResponse } from "@/lib/types";
 import { DEFAULT_ASSUMPTIONS } from "@/lib/mock-data";
 
 export default function MapPage() {
-  const [zipCode, setZipCode] = useState("");
+  const searchParams = useSearchParams();
+  const addressParam = searchParams.get("address");
+  const [zipCode, setZipCode] = useState(addressParam || "");
   const [filters, setFilters] = useState<MapFilters>({
     priceMin: 100000,
     priceMax: 2000000,
@@ -33,8 +36,27 @@ export default function MapPage() {
   const [analysisResults, setAnalysisResults] = useState<AnalyzePropertiesResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
 
-  // Try to get user's location on mount
+  // Try to get user's location on mount or use address parameter
   useEffect(() => {
+    // If address parameter exists, try to use it
+    if (addressParam) {
+      // Extract zip code if it's in the address (5 digits)
+      const zipMatch = addressParam.match(/\b\d{5}\b/);
+      if (zipMatch) {
+        const zip = zipMatch[0];
+        const coords = ZIP_COORDINATES[zip];
+        if (coords) {
+          setViewState({
+            center: { lat: coords.lat, lng: coords.lng },
+            zoom: 13,
+          });
+          const properties = generatePropertiesForZip(zip, 20);
+          setAllProperties(properties);
+          return;
+        }
+      }
+    }
+
     if (typeof navigator !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -58,7 +80,7 @@ export default function MapPage() {
       const properties = generatePropertiesForZip("02134", 20);
       setAllProperties(properties);
     }
-  }, []);
+  }, [addressParam]);
 
   // Handle ZIP code submission
   const handleZipSubmit = useCallback(() => {

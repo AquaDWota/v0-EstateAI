@@ -36,6 +36,33 @@ export default function MapPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<AnalyzePropertiesResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [isLoadingProperties, setIsLoadingProperties] = useState(false);
+
+  const fetchProperties = useCallback(
+    async (params: Record<string, string | number | undefined>) => {
+      const query = new URLSearchParams();
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== "") {
+          query.set(key, String(value));
+        }
+      }
+      setIsLoadingProperties(true);
+      try {
+        const response = await fetch(`/api/properties/06109`);
+        if (!response.ok) {
+          throw new Error("Failed to load properties");
+        }
+        const data: MapProperty[] = await response.json();
+        setAllProperties(data);
+      } catch (error) {
+        console.error("Property load error:", error);
+        setAllProperties([]);
+      } finally {
+        setIsLoadingProperties(false);
+      }
+    },
+    []
+  );
 
   // Try to get user's location on mount or use address parameter
   useEffect(() => {
@@ -66,10 +93,18 @@ export default function MapPage() {
             center: { lat: latitude, lng: longitude },
             zoom: DEFAULT_ZOOM,
           });
+          fetchProperties({ centerLat: latitude, centerLng: longitude, count: 200 });
         },
+        () => {
+          // If geolocation fails, use default (Boston)
+          fetchProperties({ zipCode: "02134", count: 200 });
+        }
       );
-    }   
-  }, [addressParam]);
+    } else {
+      // Fallback to Boston
+      fetchProperties({ zipCode: "02134", count: 200 });
+    }
+  }, [fetchProperties]);
 
   // Handle ZIP code submission
   const handleZipSubmit = useCallback(() => {
@@ -79,13 +114,14 @@ export default function MapPage() {
         center: { lat: coords.lat, lng: coords.lng },
         zoom: 13,
       });
+      fetchProperties({ zipCode, count: 200 });
       const properties = getPropertiesByZipCode(zipCode);
       setAllProperties(properties);
       setSelectedIds([]);
       setShowResults(false);
       setAnalysisResults(null);
     }
-  }, [zipCode]);
+  }, [zipCode, fetchProperties]);
 
   // Filter properties
   const filteredProperties = filterProperties(allProperties, filters);
@@ -186,7 +222,7 @@ export default function MapPage() {
         {/* Property Count Badge */}
         {/* <div className="absolute bottom-4 left-4 z-10 rounded-lg bg-card px-3 py-2 text-sm shadow-lg">
           <span className="font-medium text-foreground">
-            {filteredProperties.length}
+            {isLoadingProperties ? "Loading…" : filteredProperties.length}
           </span>{" "}
           <span className="text-muted-foreground">properties found</span>
         </div> */}

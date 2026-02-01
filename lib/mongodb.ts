@@ -1,6 +1,17 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ServerApiVersion } from 'mongodb';
 
-const options = {};
+const options = {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+  retryWrites: true,
+  w: 'majority' as const,
+  tls: true,
+  tlsAllowInvalidCertificates: false,
+  tlsAllowInvalidHostnames: false,
+};
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient> | null = null;
@@ -42,8 +53,13 @@ function getClientPromise(): Promise<MongoClient> {
 export default getClientPromise;
 
 export async function getPropertiesCollection() {
-  const client = await getClientPromise();
-  const dbName = process.env.MONGODB_DB || 'EstateAI';
-  const collectionName = process.env.MONGODB_COLLECTION || 'Sample-Listing';
-  return client.db(dbName).collection(collectionName);
+  try {
+    const client = await getClientPromise();
+    const dbName = process.env.MONGODB_DB || 'EstateAI';
+    const collectionName = process.env.MONGODB_COLLECTION || 'Sample-Listing';
+    return client.db(dbName).collection(collectionName);
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    throw new Error('Failed to connect to MongoDB. Please check your connection string and network settings.');
+  }
 }

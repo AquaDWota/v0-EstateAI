@@ -78,8 +78,7 @@ export default function MapPage() {
             center: { lat: coords.lat, lng: coords.lng },
             zoom: 13,
           });
-          const properties = getPropertiesByZipCode(zip);
-          setAllProperties(properties);
+          fetchProperties({ zipCode: zip, count: 200 });
           return;
         }
       }

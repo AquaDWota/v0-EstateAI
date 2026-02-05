@@ -172,6 +172,11 @@ async def handle_chat(ctx: Context, sender: str, msg: ChatMessage):
     # Ack
     await ctx.send(sender, ChatAcknowledgement(timestamp=utcnow(), acknowledged_msg_id=msg.msg_id))
 
+    # Check for end-session signal
+    if any(isinstance(item, EndSessionContent) for item in msg.content):
+        ctx.logger.info(f"Received end-session from {sender}")
+        return
+
     # Greet on session start
     if any(isinstance(item, StartSessionContent) for item in msg.content):
         await ctx.send(sender, create_text_chat(f"Hi! I'm a {subject_matter}. Send multi-family listings to analyze."))

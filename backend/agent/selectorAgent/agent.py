@@ -42,7 +42,7 @@ def safe_json_dumps(obj: Any) -> str:
 # ----------------------------
 subject_matter = "Estate.AI Selector + Orchestrator"
 
-ASI_API_KEY = "sk_6b423c270c7a4dbcae9315ad2d120fd8cc9ba2c4989542abad77bf5bf787a80c"
+ASI_API_KEY = os.getenv("ASI_API_KEY") #updated to get api key from the /backend/.env, you can add env variables on agentverse
 if not ASI_API_KEY:
     raise RuntimeError("Missing ASI_API_KEY env var (ASI:One API key)")
 
@@ -265,6 +265,12 @@ async def check_timeouts(ctx: Context):
                 expected = pending["expected"]
                 received = pending["received"]
                 
+                # Close sessions with all specialists
+                for specialist_key in expected:
+                    addr = SPECIALISTS.get(specialist_key)
+                    if addr:
+                        await ctx.send(addr, create_text_chat("", end_session=True))
+                
                 if received:
                     # Send partial results
                     combined = format_combined_reply(received, expected)
@@ -280,6 +286,11 @@ async def check_timeouts(ctx: Context):
                     )
                 
                 pending_del(ctx, req_id)
+                ACTIVE_REQUESTS.discard(req_id)
+                
+                # Clean up lock
+                if req_id in _request_locks:
+                    del _request_locks[req_id]
         except Exception as e:
             ctx.logger.error(f"Error checking timeout for {req_id}: {e}")
 
@@ -313,13 +324,17 @@ async def handle_chat(ctx: Context, sender: str, msg: ChatMessage):
             pending = pending_get(ctx, rid)
             if not pending:
                 ctx.logger.warning(f"No pending request found for request_id={rid}")
+                # Close the specialist session even if we don't have the pending request
+                await ctx.send(sender, create_text_chat("", end_session=True))
                 return
 
             # Store the specialist's response
             pending["received"][specialist_key] = result_text
             ctx.logger.info(f"Received response from {specialist_key} for request {rid}")
-            ctx.logger.info(f"Current received dict: {list(pending['received'].keys())}")
-
+            
+            # Close session with this specialist immediately after receiving response
+            await ctx.send(sender, create_text_chat("", end_session=True))
+            
             expected: Set[str] = pending["expected"]
             received_keys: Set[str] = set(pending["received"].keys())
             remaining = expected - received_keys

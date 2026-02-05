@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use, Suspense } from "react";
+import { useState, useEffect, useCallback, use, Suspense, memo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { MapFiltersBar } from "@/components/map/map-filters";
@@ -13,6 +13,10 @@ import type { PropertyInput, AnalyzePropertiesResponse } from "@/lib/types";
 import { DEFAULT_ASSUMPTIONS } from "@/lib/mock-data";
 import dynamic from "next/dynamic";
 import { filterProperties } from "@/components/map/property-manager";
+
+const DynamicMapView = dynamic(() => import('@/components/map/map-view').then(mod => mod.MapView), { ssr: false });
+
+const MemoizedMapView = memo(DynamicMapView);
 
 function MapPageContent() {
   const searchParams = useSearchParams();
@@ -179,14 +183,12 @@ function MapPageContent() {
     }
   }, []);
 
-  const MapView = dynamic(() => import('@/components/map/map-view').then(mod => mod.MapView), { ssr: false });
-
   return (
     <div className="flex h-screen flex-col bg-background overflow-hidden">
       <Header />
       <div className="relative flex-1 overflow-hidden">
         {/* Map View */}
-        <MapView
+        <MemoizedMapView
           properties={filteredProperties}
           selectedIds={selectedIds}
           onPropertyClick={handlePropertyClick}

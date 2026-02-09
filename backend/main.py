@@ -65,7 +65,8 @@ def get_properties(zip_code: str):
         prop["_id"] = str(prop["_id"])  # Convert ObjectId to string for JSON serialization
     return properties
 
-from .agent.agent import AgentverseClient
+# Agent integration - the specialized agents in backend/agents/ run separately
+# from .agent.agent import AgentverseClient  # Commented out - not needed for now
 import httpx
 from typing import Dict, Any
 

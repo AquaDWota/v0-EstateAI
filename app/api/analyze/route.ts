@@ -5,6 +5,9 @@ import type {
 } from "@/lib/types";
 import { analyzeProperties } from "@/lib/analysis-logic";
 
+// FastAPI backend URL
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+
 export async function POST(request: Request) {
   try {
     const body: AnalyzePropertiesRequest = await request.json();
@@ -24,7 +27,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Run analysis using Next.js implementation
+    // Run analysis using Next.js implementation (for metrics calculation)
     const results = analyzeProperties(
       body.properties,
       body.globalAssumptions,
@@ -37,19 +40,42 @@ export async function POST(request: Request) {
     const top = results[0];
     const summary = `Analyzed ${results.length} properties in ZIP ${body.zipCode}. Top pick: ${top.property.nickname} with ${top.metrics.cashOnCashReturnPercent.toFixed(1)}% cash-on-cash return and ${top.metrics.riskLevel} risk profile.`;
 
-    // Mock agent commentary (replace with actual agent call if needed)
-    const agentCommentary = {
-      cashFlowSummary: `Analysis of ${results.length} properties completed`,
-      riskSummary: "Risk assessment based on market conditions",
-      marketTimingSummary: "Current market analysis",
-      renovationSummary: "Renovation recommendations",
-      overallSummary: summary,
-      keyBullets: [
-        "Property analysis complete",
-        `Top property: ${top.property.nickname}`,
-        `Overall score: ${top.overallScore.toFixed(2)}`,
-      ],
-    };
+    // Call FastAPI backend to get AI agent commentary
+    let agentCommentary;
+    try {
+      const backendResponse = await fetch(`${BACKEND_URL}/api/agent-commentary`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(90000), // 90 second timeout for agent processing
+      });
+
+      if (backendResponse.ok) {
+        const backendData = await backendResponse.json();
+        agentCommentary = backendData.agentCommentary;
+        console.log("✅ Received AI agent commentary from backend");
+      } else {
+        console.warn("⚠️ Backend agent call failed, using fallback commentary");
+        throw new Error("Backend unavailable");
+      }
+    } catch (error) {
+      console.warn("⚠️ Could not reach backend agents, using fallback commentary:", error);
+      // Fallback to mock commentary if backend/agents are unavailable
+      agentCommentary = {
+        cashFlowSummary: `Analysis of ${results.length} properties completed`,
+        riskSummary: "Risk assessment based on market conditions",
+        marketTimingSummary: "Current market analysis",
+        renovationSummary: "Renovation recommendations",
+        overallSummary: summary,
+        keyBullets: [
+          "Property analysis complete",
+          `Top property: ${top.property.nickname}`,
+          `Overall score: ${top.overallScore.toFixed(2)}`,
+        ],
+      };
+    }
 
     const response: AgentCommentaryResponse = {
       analysis: {

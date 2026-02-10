@@ -77,7 +77,7 @@ IMPORTANT:
 - Do NOT list or mention properties ranked below the top 5
 
 SECTION 1: OVERALL SUMMARY
-2–4 sentences summarizing cashflow strength, yield ranges, and the dominant operating risks across the top deals.
+Provide approximately 200 words summarizing cashflow strength, yield ranges, dominant operating risks, market dynamics, and investment opportunities across the top deals.
 
 SECTION 2: TOP 5 RANKED INVESTMENTS
 

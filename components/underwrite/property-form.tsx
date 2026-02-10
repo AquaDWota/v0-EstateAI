@@ -99,6 +99,26 @@ export function PropertyForm({
           </div>
         </div>
 
+        {/* Property Type */}
+        <div className="space-y-2">
+          <Label htmlFor={`type-${property.id}`}>Property Type (optional)</Label>
+          <select
+            id={`type-${property.id}`}
+            value={property.type || ""}
+            onChange={(e) => handleChange("type", e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <option value="">General AI Analysis (No specific type)</option>
+            <option value="single-family">Single-Family</option>
+            <option value="multi-family">Multi-Family</option>
+            <option value="condo">Condo</option>
+            <option value="townhouse">Townhouse</option>
+          </select>
+          <p className="text-xs text-muted-foreground">
+            Leave as "General AI Analysis" for comprehensive Gemini AI analysis, or select a specific type for specialist agent analysis
+          </p>
+        </div>
+
         {/* Key Financials */}
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-foreground">Key Financials</h4>

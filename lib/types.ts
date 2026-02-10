@@ -4,6 +4,7 @@ export type PropertyInput = {
   nickname: string;
   address: string;
   zipCode: string;
+  type: string; // Property type: "single-family", "multi-family", "condo", "townhouse", or "" for AI analysis
   listPrice: number;
   estimatedRent: number;
   propertyTaxPerYear: number;

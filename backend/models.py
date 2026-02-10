@@ -16,6 +16,7 @@ class PropertyInput(BaseModel):
     nickname: str
     address: str
     zipCode: str
+    type: str = Field("")
     listPrice: float
     estimatedRent: float
     propertyTaxPerYear: float

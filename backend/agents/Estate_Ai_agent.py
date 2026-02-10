@@ -1,5 +1,6 @@
 import os
 import json
+import sys
 from datetime import datetime, timezone
 from uuid import uuid4
 from typing import Dict, Any, List, Optional, Set
@@ -7,7 +8,11 @@ import asyncio
 from dotenv import load_dotenv
 import pathlib
 
-# from google import genai  # Not needed for now, re-enable for Gemini routing
+# Add parent directory to path to import models
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
+from models import PropertyInput, DealMetrics
+
+from google import genai
 
 # Load environment variables from .env file
 env_path = pathlib.Path(__file__).parent / '.env'
@@ -63,12 +68,12 @@ subject_matter = "Estate.AI Selector + Orchestrator"
 #     api_key=ASI_API_KEY,
 # )
 
-# COMMENTED OUT - Gemini routing disabled for now
-# GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-# GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-# if not GEMINI_API_KEY:
-#     raise RuntimeError("Missing GEMINI_API_KEY env var")
-# client = genai.Client(api_key=GEMINI_API_KEY)
+# Gemini for handling untyped properties
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise RuntimeError("Missing GEMINI_API_KEY env var")
+gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
 SPECIALISTS: Dict[str, str] = {
     # "single_family": "agent1qgvq5wpy88sq8lkys59yrkd26zf2m7vtp8yq7y9sg0xz70p9ayj07ch8h4p",
@@ -140,74 +145,160 @@ chat_proto = Protocol(spec=chat_protocol_spec)
 # ----------------------------
 # Selector prompt
 # ----------------------------
-SELECTOR_SYSTEM_PROMPT = r"""
-You are a routing agent for a real-estate investment analysis system.
-
-Your ONLY responsibility is to decide which specialized agent(s) should be used to analyze the user's request.
-You do NOT analyze properties yourself.
-You do NOT generate investment advice.
-You ONLY select specialists.
-
-AVAILABLE SPECIALISTS (fixed list — do not invent new ones):
-1. "single_family"
-2. "multi_family"
-3. "condo"
-4. "townhouse"
-
-ROUTING RULES:
-- If the request explicitly mentions one or more property types, select ONLY those matching specialists.
-- If the request is general (e.g., "analyze investment properties", "best rentals in 06103"), select ALL:
-  ["single_family", "multi_family", "condo", "townhouse"]
-- If ambiguous but implies rentals/investing/deals, default to ALL.
-- Never invent new specialists.
-
-OUTPUT RULES:
-- Return ONLY valid JSON (no markdown, no extra text).
-- Must match EXACTLY:
-{"selected_specialists":["single_family","multi_family"]}
-
-Now select the appropriate specialists for the user request.
-"""
+# ----------------------------
+# Property Type to Specialist Mapping
+# ----------------------------
+PROPERTY_TYPE_MAP = {
+    "single-family": "single_family",
+    "multi-family": "multi_family",
+    "condo": "condo",
+    "townhouse": "townhouse",
+}
 
 
-def select_specialists_via_asi(user_text: str) -> List[str]:
+def get_specialist_from_property_type(property_type: str) -> Optional[str]:
     """
-    For now, always return all specialists to test routing.
-    TODO: Re-enable Gemini AI routing later
+    Map property type from PropertyInput to specialist key.
+    Returns None if type is not recognized.
     """
-    # Always return all specialists
-    return list(SPECIALISTS.keys())
+    # Normalize the property type (lowercase, handle variations)
+    normalized = property_type.lower().strip()
+    return PROPERTY_TYPE_MAP.get(normalized)
+
+
+def parse_property_data(text: str) -> Optional[PropertyInput]:
+    """
+    Try to parse incoming text as PropertyInput JSON.
+    Returns None if parsing fails.
+    """
+    try:
+        data = json.loads(text)
+        # Handle metrics being sent alongside property data
+        if "metrics" in data:
+            # Store metrics separately if needed
+            data.pop("metrics", None)
+        return PropertyInput(**data)
+    except Exception as e:
+        return None
+
+
+def select_specialists_from_properties(user_text: str) -> Optional[List[str]]:
+    """
+    Parse property data and route based on type field.
+    Returns None if property has empty type (needs Gemini analysis).
+    Returns list of specialists if type is specified.
+    """
+    # Try to parse as single property
+    prop = parse_property_data(user_text)
+    if prop:
+        # If type is empty string, return None to trigger Gemini
+        if not prop.type or prop.type.strip() == "":
+            return None
+        # If type is specified, route to specialist
+        specialist = get_specialist_from_property_type(prop.type)
+        if specialist and specialist in SPECIALISTS:
+            return [specialist]
     
-    # COMMENTED OUT - Gemini routing (re-enable later)
-    # try:
-    #     response = client.models.generate_content(
-    #         model=GEMINI_MODEL,
-    #         contents = [
-    #             SELECTOR_SYSTEM_PROMPT,
-    #             user_text,
-    #         ]
-    #     )
-    #     # Gemini API response format: response.text
-    #     raw = (response.text or "").strip()
-    #     
-    #     # Remove markdown code blocks if present
-    #     if raw.startswith("```json"):
-    #         raw = raw[7:]
-    #     if raw.startswith("```"):
-    #         raw = raw[3:]
-    #     if raw.endswith("```"):
-    #         raw = raw[:-3]
-    #     raw = raw.strip()
-    #     
-    #     data = json.loads(raw)
-    #     selected = data.get("selected_specialists", [])
-    #     if not isinstance(selected, list):
-    #         return []
-    #     return [k for k in selected if isinstance(k, str) and k in SPECIALISTS]
-    # except Exception as e:
-    #     # Fallback to all specialists on error
-    #     print(f"Error selecting specialists: {e}")
-    #     return list(SPECIALISTS.keys())
+    # Try to parse as array of properties
+    try:
+        data = json.loads(user_text)
+        if isinstance(data, list):
+            has_empty_type = False
+            specialists = set()
+            for item in data:
+                try:
+                    prop = PropertyInput(**item)
+                    if not prop.type or prop.type.strip() == "":
+                        has_empty_type = True
+                    elif prop.type:
+                        specialist = get_specialist_from_property_type(prop.type)
+                        if specialist and specialist in SPECIALISTS:
+                            specialists.add(specialist)
+                except Exception:
+                    continue
+            # If any property has empty type, use Gemini for all
+            if has_empty_type:
+                return None
+            if specialists:
+                return list(specialists)
+    except Exception:
+        pass
+    
+    # Fallback: return all specialists for backward compatibility
+    return list(SPECIALISTS.keys())
+
+
+def generate_gemini_analysis(user_text: str) -> str:
+    """
+    Generate analysis using Gemini for properties with empty type field.
+    Expects PropertyInput and optionally DealMetrics data.
+    """
+    GEMINI_SYSTEM_PROMPT = r"""You are a conservative real estate investment analyst.
+
+You will receive property data (PropertyInput) and optionally deal metrics (DealMetrics).
+Your task is to provide a comprehensive investment analysis for this property.
+
+ANALYSIS STRUCTURE:
+
+1. PROPERTY OVERVIEW
+- Address and key characteristics
+- Purchase price and estimated rent
+- Basic financial metrics
+
+2. CASH FLOW ANALYSIS
+- Monthly rental income
+- Operating expenses breakdown (property tax, insurance, HOA, maintenance, utilities)
+- Net operating income
+- Monthly cash flow after mortgage
+
+3. RETURN METRICS
+- Cap rate analysis
+- Cash-on-cash return
+- 5-year ROI projection
+- Equity build projection
+
+4. RISK ASSESSMENT
+- Vacancy risk
+- Maintenance considerations
+- Market conditions
+- Financial leverage risk
+- Overall risk level (low/medium/high)
+
+5. RECOMMENDATION
+- Investment verdict (STRONG BUY / BUY / HOLD / AVOID)
+- Key strengths and concerns
+- Action items for due diligence
+- Timing recommendation
+
+STYLE:
+- Professional and conservative tone
+- No emojis, clear formatting
+- Focus on investor decision-making
+- Highlight risks and opportunities
+- Be specific with numbers
+- Consider the downpayment, interest rate, and loan terms
+- Provide approximately 200 words of detailed analysis covering all key investment factors
+
+Provide your analysis in a clear, structured format that helps the investor make an informed decision.
+"""
+    
+    try:
+        # Parse the incoming data to provide context
+        data = json.loads(user_text) if isinstance(user_text, str) and user_text.strip().startswith('{') else {"raw": user_text}
+        
+        # Create a more readable context for Gemini
+        context = json.dumps(data, indent=2)
+        
+        response = gemini_client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=[
+                GEMINI_SYSTEM_PROMPT,
+                f"Property Data:\n{context}",
+            ],
+        )
+        return (response.text or "").strip()
+    except Exception as e:
+        return f"Error generating analysis: {str(e)}. Please try again or specify a property type."
 
 
 def format_combined_reply(received: Dict[str, str], expected: Set[str]) -> str:
@@ -242,7 +333,7 @@ def build_specialist_payload(request_id: str, specialist_key: str, user_text: st
     )
 
 
-def parse_specialist_response(text: str) -> (Optional[str], Optional[str], str):
+def parse_specialist_response(text: str) -> tuple[Optional[str], Optional[str], str]:
     t = (text or "").strip()
     if not t:
         return None, None, ""
@@ -275,6 +366,76 @@ agent = Agent(
 )
 
 
+# ----------------------------
+# REST API endpoint for FastAPI backend to send property data
+# ----------------------------
+from uagents import Model
+
+class PropertyAnalysisRequest(Model):
+    """Model for receiving property analysis requests from FastAPI backend"""
+    properties: List[Dict[str, Any]]
+    zipCode: str
+    globalAssumptions: Dict[str, Any]
+
+
+class PropertyAnalysisResponse(Model):
+    """Response model for property analysis"""
+    status: str
+    message: str
+    results: List[Dict[str, Any]]
+
+
+@agent.on_rest_post("/api/analyze", PropertyAnalysisRequest, PropertyAnalysisResponse)
+async def handle_rest_analysis(ctx: Context, req: PropertyAnalysisRequest) -> PropertyAnalysisResponse:
+    """
+    REST endpoint for receiving property analysis requests from the FastAPI backend.
+    This simulates receiving data and processing it.
+    """
+    ctx.logger.info(f"📥 Received REST request for {len(req.properties)} properties in ZIP {req.zipCode}")
+    
+    # Process each property
+    responses = []
+    for prop in req.properties:
+        property_type = prop.get("type", "")
+        property_id = prop.get("id", "unknown")
+        
+        ctx.logger.info(f"Processing property {property_id} with type: '{property_type}'")
+        
+        # If type is empty, use Gemini
+        if not property_type or property_type.strip() == "":
+            ctx.logger.info(f"Property {property_id} has empty type, using Gemini analysis")
+            try:
+                # Convert property to JSON string for Gemini
+                property_json = json.dumps(prop)
+                analysis = generate_gemini_analysis(property_json)
+                responses.append({
+                    "property_id": property_id,
+                    "type": "gemini",
+                    "analysis": analysis
+                })
+            except Exception as e:
+                ctx.logger.error(f"Error with Gemini analysis: {e}")
+                responses.append({
+                    "property_id": property_id,
+                    "type": "error",
+                    "analysis": f"Error: {str(e)}"
+                })
+        else:
+            # Route to specialist (simplified for now)
+            specialist = get_specialist_from_property_type(property_type)
+            ctx.logger.info(f"Property {property_id} type '{property_type}' maps to specialist: {specialist}")
+            responses.append({
+                "property_id": property_id,
+                "type": "specialist",
+                "specialist": specialist,
+                "analysis": f"Would route to {specialist} specialist agent"
+            })
+    
+    return PropertyAnalysisResponse(
+        status="success",
+        message=f"Processed {len(req.properties)} properties",
+        results=responses
+    )
 # ----------------------------
 # Startup handler to clear old requests
 # ----------------------------
@@ -448,10 +609,33 @@ async def handle_chat(ctx: Context, sender: str, msg: ChatMessage):
         return
 
     ctx.logger.info(f"User request: {user_text}")
+    
+    # Select specialists based on property type
+    selected = select_specialists_from_properties(user_text)
+    
+    # If None returned, property has empty type - use Gemini directly
+    if selected is None:
+        ctx.logger.info("Property has empty type field, using Gemini for direct analysis")
+        await ctx.send(sender, create_text_chat("Analyzing property with AI (no type specified)..."))
+        
+        try:
+            analysis = generate_gemini_analysis(user_text)
+            await ctx.send(sender, create_text_chat(analysis, end_session=True))
+            ctx.logger.info("Sent Gemini analysis to user")
+        except Exception as e:
+            ctx.logger.error(f"Error generating Gemini analysis: {e}")
+            await ctx.send(
+                sender,
+                create_text_chat(
+                    "Sorry, I couldn't analyze that property. Please ensure the data is valid and try again.",
+                    end_session=True
+                )
+            )
+        return
+    
+    # Route to specialists
     await ctx.send(sender, create_text_chat("Routing your request to the right specialists..."))
-
-    # Select specialists
-    selected = select_specialists_via_asi(user_text)
+    
     if not selected:
         selected = list(SPECIALISTS.keys())
 

@@ -6,7 +6,7 @@ from uuid import uuid4
 import re
 from typing import Optional
 
-from openai import OpenAI
+from google import genai
 from uagents import Context, Protocol, Agent
 from uagents_core.contrib.protocols.chat import (
     ChatAcknowledgement,
@@ -50,16 +50,13 @@ def safe_json_dumps(obj) -> str:
 subject_matter = "Single-Family Specialist"
 
 # ✅ DO NOT hardcode secrets in source
-ASI_API_KEY = os.getenv("ASI_API_KEY")
-if not ASI_API_KEY:
-    raise RuntimeError("Missing ASI_API_KEY env var")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise RuntimeError("Missing GEMINI_API_KEY env var")
 
-client = OpenAI(
-    base_url="https://api.asi1.ai/v1",
-    api_key=ASI_API_KEY,
-)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
-MODEL = os.getenv("ASI_MODEL", "asi1-mini")
+MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 SYSTEM_PROMPT = f"""You are a helpful assistant who only answers questions about {subject_matter}.""" + r"""
 You are a conservative real estate investment analyst specializing in SINGLE-FAMILY rental homes.
@@ -81,7 +78,7 @@ IMPORTANT:
 - Use ALL CAPS for verdicts
 
 SECTION 1: OVERALL SUMMARY
-2–4 sentences summarizing overall yield levels, cashflow quality, and the most common risks across the top opportunities.
+Provide approximately 200 words summarizing overall yield levels, cashflow quality, the most common risks, market dynamics, and investment outlook across the top opportunities.
 
 SECTION 2: TOP 5 RANKED INVESTMENTS
 
@@ -137,23 +134,20 @@ def extract_zipcode(text: str) -> Optional[str]:
 
 
 def run_singlefamily_analysis(user_text: str) -> str:
-    """Calls ASI-1 and returns the model's JSON string (as text)."""
+    """Calls Gemini and returns the model's text response."""
     zipCode = extract_zipcode(user_text)
     url = f"https://property-api-f9k4.onrender.com/api/properties/zipcode/{zipCode}"
 
     response = requests.get(url)
     data = response.json()
-
-    r = client.chat.completions.create(
+    response = client.models.generate_content(
         model=MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT + str(data)},
-            {"role": "user", "content": user_text},
+        contents=[
+            SYSTEM_PROMPT + str(data),
+            user_text,
         ],
-        max_tokens=2048,
-        temperature=0.2,
     )
-    return (r.choices[0].message.content or "").strip()
+    return (response.text or "").strip()
 
 
 # ----------------------------

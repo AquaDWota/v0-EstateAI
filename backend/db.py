@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import os
 
-from dotenv import dotenv_values, load_dotenv
+from dotenv import load_dotenv
 from functools import lru_cache
 from typing import Any, Dict
 
 from pymongo import MongoClient
 from pymongo.collection import Collection
 
+# Load environment variables at module level
+load_dotenv()
 
 
 class MongoSettingsError(RuntimeError):
@@ -24,7 +26,6 @@ def _client() -> MongoClient:
 
 
 def get_properties_collection() -> Collection[Dict[str, Any]]:
-    load_dotenv("backend/.env")
     db_name = os.getenv("MONGODB_DB", "EstateAI")
     collection_name = os.getenv("MONGODB_COLLECTION", "Sample-Listing")
 

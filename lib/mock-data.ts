@@ -80,6 +80,7 @@ export function generateMockProperty(
       `Property ${existingCount + 1}`,
     address: `${streetNumber} ${streetName}`,
     zipCode: zipCode,
+    type: "", // Default to empty for AI analysis
     listPrice: listPrice,
     estimatedRent: Math.round(defaults.avgRent * rentVariance),
     propertyTaxPerYear: Math.round(defaults.avgTax * priceVariance),
@@ -106,6 +107,7 @@ export function createEmptyProperty(
     nickname: `Property ${existingCount + 1}`,
     address: "",
     zipCode: zipCode,
+    type: "", // Default to empty for AI analysis
     listPrice: 0,
     estimatedRent: 0,
     propertyTaxPerYear: 0,

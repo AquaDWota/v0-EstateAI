@@ -5,7 +5,7 @@ from hashlib import md5
 from math import pow
 from typing import List, Literal
 
-from .models import (
+from models import (
     AgentCommentary,
     DealMetrics,
     GlobalAssumptions,

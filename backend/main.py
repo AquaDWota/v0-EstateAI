@@ -5,9 +5,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 
-from .db import MongoSettingsError, get_properties_collection
-from .logic import analyze_properties
-from .models import (
+from db import MongoSettingsError, get_properties_collection
+from logic import analyze_properties
+from models import (
     AnalyzePropertiesRequest,
     AnalyzePropertiesResponse,
 )
@@ -66,62 +66,201 @@ def get_properties(zip_code: str):
     return properties
 
 # Agent integration - the specialized agents in backend/agents/ run separately
-# from .agent.agent import AgentverseClient  # Commented out - not needed for now
 import httpx
 from typing import Dict, Any
+import json
+
+
+# Estate AI Agent Configuration
+ESTATE_AI_AGENT_ADDRESS = "agent1qgkq02guhyjsvdlum38rc6jm6y6wdsc6zy8jw267cjadf2a09ydag36t75n"
+AGENTVERSE_MAILBOX_API_URL = "https://agentverse.ai/v1/mailbox"
+
+
+async def send_message_to_agent(agent_address: str, message_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Send a message to a uagent via the Agentverse mailbox.
+    
+    Args:
+        agent_address: The agent's address on testnet/mainnet
+        message_data: The data to send to the agent
+        
+    Returns:
+        Response from the agent
+    """
+    import os
+    api_key = os.getenv("AGENTVERSE_API_KEY")
+    
+    if not api_key:
+        # If no API key, try local endpoint (for development)
+        # Estate_AI_agent runs on port 8005
+        try:
+            local_url = "http://127.0.0.1:8005/submit"
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    local_url,
+                    json=message_data,
+                    headers={"Content-Type": "application/json"}
+                )
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            print(f"Local agent call failed: {e}")
+            pass
+    
+    # Use Agentverse mailbox API
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "destination": agent_address,
+        "message": message_data,
+    }
+    
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        response = await client.post(
+            AGENTVERSE_MAILBOX_API_URL,
+            json=payload,
+            headers=headers
+        )
+        
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Failed to communicate with agent: {response.text}"
+            )
+        
+        return response.json()
 
 
 async def call_agent_with_analysis_data(analysis_payload: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Call the agent with analysis data from the underwriting results.
-    This function sends the data to Agentverse agents via HTTP.
+    Send property data to Estate AI agent for analysis and get AI commentary.
     
     Args:
         analysis_payload: Dictionary containing:
-            - input: Original request data
+            - input: Original request data (with properties, zipCode, globalAssumptions)
             - results: Analysis results for all properties
             - summary: Overall summary text
             
     Returns:
         Agent commentary response with investment insights
     """
-    # Prepare the payload for the agent
-    # Extract the top property from results to determine which agent to call
     if not analysis_payload.get("results"):
         raise HTTPException(status_code=400, detail="No results in analysis payload")
     
-    top_property = analysis_payload["results"][0]
-    property_type = top_property.get("property", {}).get("propertyType", "single_family").lower()
+    # Try to send to Estate AI agent
+    try:
+        input_data = analysis_payload.get("input", {})
+        
+        # Send to Estate AI agent's REST endpoint
+        agent_url = "http://127.0.0.1:8005/api/analyze"
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                agent_url,
+                json={
+                    "properties": input_data.get("properties", []),
+                    "zipCode": input_data.get("zipCode", ""),
+                    "globalAssumptions": input_data.get("globalAssumptions", {})
+                }
+            )
+            
+            if response.status_code == 200:
+                agent_response = response.json()
+                print(f"✅ Estate AI agent responded: {agent_response.get('message')}")
+                
+                # Format agent responses into commentary
+                results = agent_response.get("results", [])
+                
+                # Combine analyses
+                analyses = [r.get("analysis", "") for r in results if r.get("analysis")]
+                combined_analysis = "\n\n---\n\n".join(analyses) if analyses else ""
+                
+                # Use first 500 chars for summaries
+                cash_flow_summary = combined_analysis[:500] if combined_analysis else "Analysis completed by Estate AI"
+                
+                return {
+                    "cashFlowSummary": cash_flow_summary,
+                    "riskSummary": "AI-powered risk assessment completed",
+                    "marketTimingSummary": "Market timing analysis from AI specialists",
+                    "renovationSummary": "Renovation insights included in analysis",
+                    "overallSummary": analysis_payload.get("summary", ""),
+                    "keyBullets": [
+                        f"Processed by Estate AI: {len(results)} properties",
+                        f"Analysis type: {results[0].get('type') if results else 'N/A'}",
+                        f"Top property: {analysis_payload['results'][0].get('property', {}).get('nickname', 'N/A')}"
+                    ],
+                    "detailedAnalysis": combined_analysis
+                }
     
-    # Map property types to agent addresses
-    agents_id = {
-        "selector": "agent1qgkq02guhyjsvdlum38rc6jm6y6wdsc6zy8jw267cjadf2a09ydag36t75n",
-        "single_family": "agent1qfx2t3l547y6fxh36sdlpdul6enjwq9ln7temx0svga45k8wpte6u0gx806",
-        "multi_family": "agent1qg9sdk22q7esjn6pkgszxkdeftvuu6wdf9lyldz9ymmh5987cx4u6aca03v",
-        "condo": "agent1qgw377xy88pww76us3c0y3v5vp9cdfuhya0w6ygy5ynd9e2klmxd29ru52m",
-        "townhouse": "agent1qv3jmxq2p0aj20tx9fsy4p84svqpxfysweajsjuxgstedl598xmxx42fn3h",
-    }
+    except Exception as e:
+        print(f"⚠️ Could not reach Estate AI agent: {e}")
+        print("Falling back to metrics-based commentary")
     
-    agent_key = property_type.replace(" ", "_")
-    if agent_key not in agents_id:
-        agent_key = "selector"
-    
-    # For now, return a mock response since we need proper Agentverse setup
-    # TODO: Replace with actual Agentverse API call
-    mock_response = {
-        "cashFlowSummary": f"Analysis of {len(analysis_payload['results'])} properties completed",
-        "riskSummary": "Risk assessment based on market conditions",
-        "marketTimingSummary": "Current market analysis",
-        "renovationSummary": "Renovation recommendations",
-        "overallSummary": analysis_payload.get("summary", "Investment analysis complete"),
-        "keyBullets": [
-            "Property analysis complete",
-            f"Top property: {top_property.get('property', {}).get('nickname', 'N/A')}",
-            f"Overall score: {top_property.get('overallScore', 0):.2f}"
-        ]
-    }
-    
-    return mock_response
+    # Fallback: Generate commentary from metrics
+    try:
+        top_property = analysis_payload["results"][0]
+        property_data = top_property.get("property", {})
+        metrics = top_property.get("metrics", {})
+        property_type = property_data.get("type", "")
+        
+        cash_flow_summary = f"""Analyzed {len(analysis_payload['results'])} properties. 
+Top property generates ${metrics.get('monthlyCashFlow', 0):.2f}/month in cash flow with a 
+{metrics.get('capRatePercent', 0):.2f}% cap rate."""
+        
+        risk_summary = f"""Risk Level: {metrics.get('riskLevel', 'medium').upper()}
+Monthly expenses: ${metrics.get('monthlyOperatingExpenses', 0):.2f}
+Vacancy impact considered at {property_data.get('vacancyRatePercent', 5)}%"""
+        
+        timing_summary = f"""Recommendation: {metrics.get('timingRecommendation', 'watch').replace('_', ' ').upper()}"""
+        
+        renovation_summary = f"""Renovation budget: ${property_data.get('renovationBudget', 0):,.0f}
+ARV: ${property_data.get('arv', 0):,.0f}"""
+        
+        type_insights = ""
+        if property_type == "multi-family":
+            type_insights = "Multi-family properties offer income diversification."
+        elif property_type == "single-family":
+            type_insights = "Single-family homes typically see strong appreciation."
+        elif property_type == "condo":
+            type_insights = "Condo investments require attention to HOA fees."
+        elif property_type == "townhouse":
+            type_insights = "Townhouses balance appreciation with shared maintenance."
+        else:
+            type_insights = "General property analysis completed."
+        
+        overall = f"""{analysis_payload.get('summary', '')}
+
+{type_insights}
+
+5-year projection: ${metrics.get('fiveYearTotalCashFlow', 0):,.0f} cash flow, 
+${metrics.get('fiveYearEquityBuilt', 0):,.0f} equity built."""
+        
+        return {
+            "cashFlowSummary": cash_flow_summary,
+            "riskSummary": risk_summary,
+            "marketTimingSummary": timing_summary,
+            "renovationSummary": renovation_summary,
+            "overallSummary": overall,
+            "keyBullets": [
+                f"Monthly Cash Flow: ${metrics.get('monthlyCashFlow', 0):.2f}",
+                f"Cash-on-Cash Return: {metrics.get('cashOnCashReturnPercent', 0):.2f}%",
+                f"Cap Rate: {metrics.get('capRatePercent', 0):.2f}%",
+                f"5-Year ROI: {metrics.get('fiveYearTotalRoiPercent', 0):.1f}%"
+            ]
+        }
+    except Exception as e:
+        print(f"Error: {e}")
+        return {
+            "cashFlowSummary": "Analysis completed",
+            "riskSummary": "Risk assessment included",
+            "marketTimingSummary": "Market analysis included",
+            "renovationSummary": "Renovation insights included",
+            "overallSummary": analysis_payload.get("summary", "Analysis complete"),
+            "keyBullets": ["Analysis complete"]
+        }
 
 
 @app.post("/api/agent-commentary")

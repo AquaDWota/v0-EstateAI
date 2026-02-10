@@ -76,7 +76,7 @@ IMPORTANT:
 - Do NOT list or mention properties ranked below the top 5
 
 SECTION 1: OVERALL SUMMARY
-2–4 sentences summarizing yield quality, HOA burden, and assessment-driven risks across the top condo opportunities.
+Provide approximately 200 words summarizing yield quality, HOA burden, assessment-driven risks, market conditions, and investment outlook across the top condo opportunities.
 
 SECTION 2: TOP 5 RANKED INVESTMENTS
 

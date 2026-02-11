@@ -199,7 +199,7 @@ GEMINI_API_KEY=your_key_here
 
 ## Testing Checklist
 
-- [ ] Estate_AI_agent starts without errors
+- [ ] Estate_AI_agent starts without errors on port 8005
 - [ ] Backend API starts on port 8000
 - [ ] Frontend starts on port 3000
 - [ ] Can add properties in the UI
@@ -207,28 +207,82 @@ GEMINI_API_KEY=your_key_here
 - [ ] Test script runs successfully
 - [ ] Analysis with empty type returns Gemini response
 - [ ] Analysis with specific type routes to specialist (if agent is running)
+- [ ] Chat protocol health check returns status
+- [ ] REST API endpoint accepts property data
+
+## Chat Protocol Integration
+
+Estate.AI now supports the **Fetch.ai Chat Protocol**, making it accessible from anywhere on the Agentverse!
+
+### Quick Start
+
+```bash
+# Start the agent with chat protocol support
+cd backend/agents
+./run_estate_ai.sh
+```
+
+### Test the Integration
+
+```bash
+# In another terminal
+cd backend/agents
+./test_chat.sh
+```
+
+### Endpoints Available
+
+1. **Health Check**: `GET http://127.0.0.1:8005/status`
+2. **REST API**: `POST http://127.0.0.1:8005/api/analyze`
+3. **Chat Protocol**: `POST http://127.0.0.1:8005/chat`
+
+### Get Your Agent Address
+
+```bash
+curl http://127.0.0.1:8005/status
+```
+
+This returns your agent's address for Agentverse integration.
+
+### Documentation
+
+- **Comprehensive Guide**: [backend/agents/CHAT_PROTOCOL_SETUP.md](./backend/agents/CHAT_PROTOCOL_SETUP.md)
+- **Usage Examples**: [backend/agents/example_chat_usage.py](./backend/agents/example_chat_usage.py)
+- **Test Suite**: [backend/agents/test_chat_protocol.py](./backend/agents/test_chat_protocol.py)
+- **Agent README**: [backend/agents/README.md](./backend/agents/README.md)
 
 ## Next Steps
 
 1. **Production Deployment:**
-   - Deploy agents to Agentverse
+   - Deploy agents to Agentverse with public endpoints
    - Update agent addresses in Estate_Ai_agent.py SPECIALISTS dict
    - Add AGENTVERSE_API_KEY to backend .env
+   - Set AGENT_EXTERNAL_ENDPOINT for public access
+   - Use network="mainnet" for production
 
 2. **Enhanced Features:**
    - Add loading states during agent processing
    - Display detailed analysis in a modal
    - Save analysis results to database
    - Add comparison view for multiple analyst responses
+   - Implement retry logic for Gemini rate limits
 
 3. **Monitoring:**
    - Add logging for agent responses
    - Track response times
    - Monitor success/failure rates
+   - Set up health check monitoring
+
+4. **Agentverse Integration:**
+   - Register Estate.AI on Agentverse marketplace
+   - Enable discovery for other agents
+   - Add webhook notifications for completed analyses
+   - Implement agent-to-agent collaboration
 
 ## Support
 
 For detailed documentation, see:
 - [AGENT_INTEGRATION.md](./AGENT_INTEGRATION.md) - Complete integration guide
-- [backend/agents/](./backend/agents/) - Agent source code
+- [backend/agents/README.md](./backend/agents/README.md) - Agents documentation
+- [backend/agents/CHAT_PROTOCOL_SETUP.md](./backend/agents/CHAT_PROTOCOL_SETUP.md) - Chat protocol guide
 - [DEPLOYMENT.md](./DEPLOYMENT.md) - Production deployment guide

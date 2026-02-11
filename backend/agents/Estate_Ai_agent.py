@@ -17,7 +17,8 @@ from google import genai
 # Load environment variables from .env file
 env_path = pathlib.Path(__file__).parent / '.env'
 load_dotenv(dotenv_path=env_path)
-from uagents import Context, Protocol, Agent
+
+from uagents import Context, Protocol, Agent, Model
 from uagents_core.contrib.protocols.chat import (
     ChatAcknowledgement,
     ChatMessage,
@@ -26,6 +27,9 @@ from uagents_core.contrib.protocols.chat import (
     TextContent,
     chat_protocol_spec,
 )
+from uagents_core.envelope import Envelope
+from uagents_core.utils.messages import parse_envelope, send_message_to_agent
+from fastapi import FastAPI
 
 # Request-level locks to prevent concurrent storage updates
 _request_locks: Dict[str, asyncio.Lock] = {}
@@ -356,20 +360,30 @@ def parse_specialist_response(text: str) -> tuple[Optional[str], Optional[str], 
 # ----------------------------
 # Agent
 # ----------------------------
+# Get endpoint from environment variable or use local default
+AGENT_ENDPOINT = os.getenv("AGENT_ENDPOINT")
+if AGENT_ENDPOINT:
+    # Use public endpoint (e.g., from cloudflared tunnel)
+    agent_endpoints = [AGENT_ENDPOINT]
+    print(f"🌐 Using public endpoint: {AGENT_ENDPOINT}")
+else:
+    # Use local endpoint for testing
+    agent_endpoints = ["http://127.0.0.1:8005/submit"]
+    print("🏠 Using local endpoint: http://127.0.0.1:8005/submit")
+
 agent = Agent(
     name="Estate-Ai",
-    seed="selector-agent",
+    seed=os.getenv("AGENT_SEED", "selector-agent"),  # Use env var for production
     port=8005,
     mailbox=True,
-    # endpoint="http://127.0.0.1:8005/submit",
-    network="testnet",
+    endpoint=agent_endpoints,
+    network=NETWORK or "testnet",
 )
 
 
 # ----------------------------
 # REST API endpoint for FastAPI backend to send property data
 # ----------------------------
-from uagents import Model
 
 class PropertyAnalysisRequest(Model):
     """Model for receiving property analysis requests from FastAPI backend"""
@@ -707,6 +721,96 @@ async def handle_ack(ctx: Context, sender: str, msg: ChatAcknowledgement):
 
 
 agent.include(chat_proto, publish_manifest=True)
+
+# ----------------------------
+# Chat Protocol Endpoint (FastAPI-style for external access)
+# ----------------------------
+
+app = FastAPI()
+
+@app.get("/status")
+async def healthcheck():
+    """Health check endpoint for monitoring"""
+    return {
+        "status": "OK",
+        "agent": "Estate.AI Orchestrator",
+        "address": str(agent.address),
+        "network": NETWORK or "testnet"
+    }
+
+@app.post("/chat")
+async def handle_chat_message(env: Envelope):
+    """
+    Chat Protocol endpoint that allows Estate.AI to be accessed from anywhere on Agentverse.
+    This endpoint receives chat messages and responds with property analysis.
+    """
+    try:
+        # Parse the incoming chat message
+        msg = parse_envelope(env, ChatMessage)
+        user_message = msg.text()
+        
+        print(f"📨 Received chat message from {env.sender}: {user_message}")
+        
+        # Try to parse as property data
+        property_data = parse_property_data(user_message)
+        
+        if property_data:
+            # Property data received - analyze it
+            property_type = property_data.type or ""
+            
+            if not property_type.strip():
+                # Empty type - use Gemini
+                print(f"🤖 Analyzing with Gemini (no type specified)")
+                try:
+                    analysis = generate_gemini_analysis(user_message)
+                    response_text = f"Estate.AI Analysis (Gemini):\n\n{analysis}"
+                except Exception as e:
+                    response_text = f"Error analyzing property: {str(e)}"
+            else:
+                # Route to specialist
+                specialist = get_specialist_from_property_type(property_type)
+                if specialist and specialist in SPECIALISTS:
+                    response_text = f"Property type '{property_type}' received. Routing to {specialist} specialist agent for detailed analysis."
+                    print(f"📤 Would route to {specialist} specialist")
+                else:
+                    response_text = f"Property type '{property_type}' not recognized. Available types: {', '.join(PROPERTY_TYPE_MAP.keys())}"
+        else:
+            # Not property data - treat as general inquiry
+            response_text = f"""Hello! I'm Estate.AI, your real estate investment orchestrator.
+
+Send me property data in JSON format with these fields:
+- address (string)
+- listPrice (number)
+- estimatedRent (number)
+- type (string): "single-family", "multi-family", "condo", or "townhouse" (leave empty for AI analysis)
+- zipCode (string)
+- bedrooms, bathrooms, sqft (numbers)
+... and more
+
+I'll analyze the property and provide investment recommendations!
+
+You said: {user_message}"""
+        
+        # Send response back to sender
+        send_message_to_agent(
+            destination=env.sender,
+            msg=ChatMessage([TextContent(response_text)]),
+            sender=agent._identity,
+        )
+        
+        print(f"✅ Responded to {env.sender}")
+        
+    except Exception as e:
+        print(f"❌ Error handling chat message: {e}")
+        # Try to send error response
+        try:
+            send_message_to_agent(
+                destination=env.sender,
+                msg=ChatMessage([TextContent(f"Error processing your message: {str(e)}")]),
+                sender=agent._identity,
+            )
+        except:
+            pass
 
 if __name__ == "__main__":
     agent.run()

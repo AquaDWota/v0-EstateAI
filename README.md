@@ -12,7 +12,8 @@ EstateAI is an AI-powered real estate investment analysis platform designed spec
 - **🗺️ Interactive Map View** - Explore properties with an intuitive Leaflet-based map interface
 - **📊 Comprehensive Deal Analysis** - Calculate key metrics: cash flow, ROI, cap rate, cash-on-cash returns
 - **🤖 AI-Powered Insights** - Property-type-specific agents (Single-Family, Multi-Family, Condo, Townhouse) provide tailored investment commentary via Fetch.ai's Agentverse
-- **📈 5-Year Projections** - Timeline forecasts showing equity build-up and cumulative returns
+- **� Chat Protocol Integration** - Estate.AI agent is accessible from anywhere on Agentverse through standard chat protocol
+- **�📈 5-Year Projections** - Timeline forecasts showing equity build-up and cumulative returns
 - **🎯 Risk Assessment** - Automated risk scoring and timing recommendations (buy now, watch, avoid)
 - **🔍 Smart Property Filtering** - Filter by price, bedrooms, bathrooms, and property type
 - **📋 Side-by-Side Comparisons** - Compare up to 5 properties simultaneously
@@ -224,13 +225,33 @@ The platform calculates the following metrics:
 
 The platform integrates with Fetch.ai's Agentverse, using specialized agents for different property types:
 
-- **Selector Agent**: Routes analysis to the appropriate property-type agent
-- **Single-Family Agent**: Analyzes single-family homes
-- **Multi-Family Agent**: Analyzes multi-unit properties
-- **Condo Agent**: Analyzes condominium investments
-- **Townhouse Agent**: Analyzes townhouse properties
+- **Estate.AI Orchestrator** (Main Agent): Routes analysis to appropriate specialists and provides Gemini-powered analysis
+- **Single-Family Agent**: Analyzes single-family homes with ~200 word detailed reports
+- **Multi-Family Agent**: Analyzes multi-unit properties with cashflow and risk assessment
+- **Condo Agent**: Analyzes condominium investments considering HOA factors
+- **Townhouse Agent**: Analyzes townhouse properties with maintenance considerations
 
 Each agent provides tailored commentary on cash flow, risk, market timing, and renovations based on property-specific factors.
+
+### Chat Protocol Integration
+
+The Estate.AI orchestrator agent is accessible from anywhere on Agentverse through the standard Chat Protocol:
+
+- **Health Check**: `GET http://localhost:8005/status`
+- **Chat Endpoint**: `POST http://localhost:8005/chat` (accepts Envelope format)
+- **REST API**: `POST http://localhost:8005/api/analyze` (for direct integration)
+
+**Features:**
+- Send property data as JSON via chat messages
+- Automatic routing based on property type
+- Gemini AI analysis for unspecified property types
+- Specialist agent routing for typed properties
+- Discoverable on Agentverse platform
+
+**Documentation:**
+- See [CHAT_PROTOCOL_SETUP.md](backend/agents/CHAT_PROTOCOL_SETUP.md) for detailed setup
+- Run tests: `python backend/agents/test_chat_protocol.py`
+- Examples: `python backend/agents/example_chat_usage.py`
 
 ## Testing
 

@@ -373,7 +373,7 @@ else:
 
 agent = Agent(
     name="Estate-Ai",
-    seed=os.getenv("AGENT_SEED", "selector-agent"),  # Use env var for production
+    seed=os.getenv("AGENT_SEED", "selector-agent-team"),  # Use env var for production
     port=8005,
     mailbox=True,
     endpoint=agent_endpoints,

@@ -151,8 +151,8 @@ agent = Agent(
     name="CondoSpecialist",
     seed="condo-agent",
     port=8012,
-    endpoint=("http://127.0.0.1:8012/submit"),
-    mailbox=True,
+    endpoint=["http://127.0.0.1:8012/submit"],
+    mailbox=False,
     network="testnet",  # must match router network
 )
 

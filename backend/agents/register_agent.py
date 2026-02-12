@@ -12,11 +12,11 @@ env_path = pathlib.Path(__file__).parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
 register_chat_agent(
-    "estate-ai-1",
-    "https://epic-tribe-router-nut.trycloudflare.com/",
+    "estate-ai-team",
+    "https://flood-manually-commonwealth-eagles.trycloudflare.com/submit",
     active=True,
     credentials=RegistrationRequestCredentials(
-        agentverse_api_key=os.environ["ASI_API_KEY"],
-        agent_seed_phrase="selector-agent",        
+        agentverse_api_key=os.environ["AGENTVERSE_API_KEY"],
+        agent_seed_phrase="selector-agent-team",        
     ),
 )

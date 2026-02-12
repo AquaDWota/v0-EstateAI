@@ -156,8 +156,8 @@ agent = Agent(
     name="MultiFamilySpecialist",
     seed="multifamily-agent",
     port=8011,
-    mailbox=True,
-    endpoint=("http://127.0.0.1:8011/submit"),
+    endpoint=["http://127.0.0.1:8011/submit"],
+    mailbox=False,
     network="testnet",  # must match router network
 )
 

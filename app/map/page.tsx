@@ -9,7 +9,7 @@ import { PropertyPanel } from "@/components/map/property-panel";
 import { MapResultsPanel } from "@/components/map/results-panel";
 import type { MapProperty, MapFilters, MapViewState } from "@/lib/map-types";
 import { ZIP_COORDINATES, DEFAULT_CENTER, DEFAULT_ZOOM } from "@/lib/map-types";
-import type { PropertyInput, AnalyzePropertiesResponse } from "@/lib/types";
+import type { PropertyInput, AgentCommentaryResponse } from "@/lib/types";
 import { DEFAULT_ASSUMPTIONS } from "@/lib/mock-data";
 import dynamic from "next/dynamic";
 import { filterProperties } from "@/components/map/property-manager";
@@ -38,7 +38,7 @@ function MapPageContent() {
   const [allProperties, setAllProperties] = useState<MapProperty[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState<AnalyzePropertiesResponse | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<AgentCommentaryResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [isLoadingProperties, setIsLoadingProperties] = useState(false);
 

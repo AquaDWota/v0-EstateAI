@@ -206,6 +206,15 @@ export function ResultsPanel({ results, aiCommentary, isLoading }: ResultsPanelP
                 ))}
               </ul>
             </div>
+            
+            {aiCommentary.detailedAnalysis && (
+              <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+                <h4 className="mb-2 text-sm font-semibold text-foreground">Detailed Agent Analysis</h4>
+                <div className="whitespace-pre-wrap text-sm text-muted-foreground">
+                  {aiCommentary.detailedAnalysis}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

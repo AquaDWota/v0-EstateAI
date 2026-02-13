@@ -69,11 +69,15 @@ def get_properties(zip_code: str):
 import httpx
 from typing import Dict, Any
 import json
+import os
 
 
 # Estate AI Agent Configuration
 ESTATE_AI_AGENT_ADDRESS = "agent1qgkq02guhyjsvdlum38rc6jm6y6wdsc6zy8jw267cjadf2a09ydag36t75n"
 AGENTVERSE_MAILBOX_API_URL = "https://agentverse.ai/v1/mailbox"
+
+# Get agent endpoint from environment (defaults to localhost for development)
+AGENT_ENDPOINT = os.getenv("AGENT_ENDPOINT", "http://127.0.0.1:8005") #change to cloudflared url if non-local development
 
 
 async def send_message_to_agent(agent_address: str, message_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -87,17 +91,16 @@ async def send_message_to_agent(agent_address: str, message_data: Dict[str, Any]
     Returns:
         Response from the agent
     """
-    import os
     api_key = os.getenv("AGENTVERSE_API_KEY")
     
     if not api_key:
-        # If no API key, try local endpoint (for development)
-        # Estate_AI_agent runs on port 8005
+        # If no API key, try agent endpoint (for development)
+        # Estate_AI_agent runs on port 8005 locally or via tunnel
         try:
-            local_url = "http://127.0.0.1:8005/submit"
+            agent_url = f"{AGENT_ENDPOINT}/submit" if not AGENT_ENDPOINT.endswith("/submit") else AGENT_ENDPOINT
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
-                    local_url,
+                    agent_url,
                     json=message_data,
                     headers={"Content-Type": "application/json"}
                 )
@@ -154,8 +157,8 @@ async def call_agent_with_analysis_data(analysis_payload: Dict[str, Any]) -> Dic
     try:
         input_data = analysis_payload.get("input", {})
         
-        # Send to Estate AI agent's REST endpoint
-        agent_url = "http://127.0.0.1:8005/api/analyze"
+        # Send to Estate AI agent's REST endpoint (local or remote)
+        agent_url = f"{AGENT_ENDPOINT}/api/analyze" if not AGENT_ENDPOINT.endswith("/api/analyze") else AGENT_ENDPOINT
         
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
@@ -181,16 +184,38 @@ async def call_agent_with_analysis_data(analysis_payload: Dict[str, Any]) -> Dic
                 # Use first 500 chars for summaries
                 cash_flow_summary = combined_analysis[:500] if combined_analysis else "Analysis completed by Estate AI"
                 
+                # Extract key insights for different sections from the combined analysis
+                analysis_lines = combined_analysis.split('\n')
+                
+                # Try to parse sections from the analysis
+                cash_flow_section = ""
+                risk_section = ""
+                market_section = ""
+                renovation_section = ""
+                
+                for i, line in enumerate(analysis_lines):
+                    line_upper = line.upper()
+                    if 'CASH FLOW' in line_upper or 'MONTHLY' in line_upper:
+                        # Get next few lines
+                        cash_flow_section += '\n'.join(analysis_lines[i:min(i+3, len(analysis_lines))])
+                    elif 'RISK' in line_upper:
+                        risk_section += '\n'.join(analysis_lines[i:min(i+3, len(analysis_lines))])
+                    elif 'MARKET' in line_upper or 'TIMING' in line_upper:
+                        market_section += '\n'.join(analysis_lines[i:min(i+3, len(analysis_lines))])
+                    elif 'RENOVATION' in line_upper or 'REPAIR' in line_upper:
+                        renovation_section += '\n'.join(analysis_lines[i:min(i+3, len(analysis_lines))])
+                
                 return {
-                    "cashFlowSummary": cash_flow_summary,
-                    "riskSummary": "AI-powered risk assessment completed",
-                    "marketTimingSummary": "Market timing analysis from AI specialists",
-                    "renovationSummary": "Renovation insights included in analysis",
+                    "cashFlowSummary": cash_flow_section[:300] if cash_flow_section else cash_flow_summary,
+                    "riskSummary": risk_section[:300] if risk_section else "AI-powered risk assessment completed. See detailed analysis below.",
+                    "marketTimingSummary": market_section[:300] if market_section else "Market timing analysis from AI specialists. See detailed analysis below.",
+                    "renovationSummary": renovation_section[:300] if renovation_section else "Renovation insights included in detailed analysis.",
                     "overallSummary": analysis_payload.get("summary", ""),
                     "keyBullets": [
-                        f"Processed by Estate AI: {len(results)} properties",
-                        f"Analysis type: {results[0].get('type') if results else 'N/A'}",
-                        f"Top property: {analysis_payload['results'][0].get('property', {}).get('nickname', 'N/A')}"
+                        f"✓ Processed by Estate AI: {len(results)} properties analyzed",
+                        f"✓ Analysis type: {results[0].get('type', 'N/A').title() if results else 'N/A'}",
+                        f"✓ Top property: {analysis_payload['results'][0].get('property', {}).get('nickname', 'N/A')}",
+                        f"✓ Comprehensive AI investment analysis generated"
                     ],
                     "detailedAnalysis": combined_analysis
                 }
@@ -354,7 +379,8 @@ async def handle_property_analysis(ctx: Context, sender: str, msg: PropertyAnaly
     # - renovationSummary: Renovation potential analysis
     # - overallSummary: Overall investment recommendation
     # - keyBullets: List of key takeaways
+"""
 
 if __name__ == "__main__":
-    agent.run()
-"""
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

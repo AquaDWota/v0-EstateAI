@@ -21,15 +21,16 @@ import {
   X,
   BarChart3,
   Bot,
+  Sparkles,
 } from "lucide-react";
-import type { AnalyzePropertiesResponse, PropertyAnalysisResult } from "@/lib/types";
+import type { AgentCommentaryResponse, PropertyAnalysisResult, AgentCommentary } from "@/lib/types";
 import { PropertyDetailModal } from "@/components/underwrite/property-detail-modal";
 import { ComparisonTable } from "@/components/underwrite/comparison-table";
 import { AgentBadges } from "@/components/underwrite/agent-badges";
 import { cn } from "@/lib/utils";
 
 interface MapResultsPanelProps {
-  results: AnalyzePropertiesResponse | null;
+  results: AgentCommentaryResponse | null;
   isLoading: boolean;
   isVisible: boolean;
   onClose: () => void;
@@ -149,6 +150,93 @@ export function MapResultsPanel({
             <div className="space-y-6 absolute w-full">
               {/* AI Underwriters Panel */}
               <AgentBadges />
+
+              {/* EstateAI Agent Commentary */}
+              {results.agentCommentary && (
+                <Card className="border-2 border-accent bg-gradient-to-br from-accent/5 to-accent/10">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Sparkles className="h-5 w-5 text-accent" />
+                      EstateAI Agent Insights
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      AI-powered comprehensive analysis
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Overall Summary */}
+                    <div className="rounded-lg bg-background/50 p-3">
+                      <p className="text-sm font-medium text-foreground">
+                        {results.agentCommentary.overallSummary}
+                      </p>
+                    </div>
+
+                    {/* Key Bullets */}
+                    {results.agentCommentary.keyBullets && results.agentCommentary.keyBullets.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          Key Insights
+                        </h4>
+                        <ul className="space-y-1.5">
+                          {results.agentCommentary.keyBullets.map((bullet, index) => (
+                            <li key={index} className="flex items-start gap-2 text-sm">
+                              <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-accent" />
+                              <span className="text-muted-foreground">{bullet}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Detailed Analysis Sections */}
+                    <div className="grid gap-3">
+                      {/* Cash Flow */}
+                      <div className="rounded-lg border border-border/50 bg-background/30 p-3">
+                        <h4 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                          <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+                          Cash Flow Analysis
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {results.agentCommentary.cashFlowSummary}
+                        </p>
+                      </div>
+
+                      {/* Risk */}
+                      <div className="rounded-lg border border-border/50 bg-background/30 p-3">
+                        <h4 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                          <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />
+                          Risk Assessment
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {results.agentCommentary.riskSummary}
+                        </p>
+                      </div>
+
+                      {/* Market Timing */}
+                      <div className="rounded-lg border border-border/50 bg-background/30 p-3">
+                        <h4 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                          <Eye className="h-3.5 w-3.5 text-blue-500" />
+                          Market Timing
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {results.agentCommentary.marketTimingSummary}
+                        </p>
+                      </div>
+
+                      {/* Renovation */}
+                      <div className="rounded-lg border border-border/50 bg-background/30 p-3">
+                        <h4 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                          <Bot className="h-3.5 w-3.5 text-purple-500" />
+                          Renovation Insights
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {results.agentCommentary.renovationSummary}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Summary */}
               <Card className="border-border bg-card">

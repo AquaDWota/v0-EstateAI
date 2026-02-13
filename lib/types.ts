@@ -54,6 +54,7 @@ export type AgentCommentary = {
   renovationSummary: string;
   overallSummary: string;
   keyBullets: string[];
+  detailedAnalysis?: string; // Full AI analysis from Estate AI agents
 };
 
 // Full result for each property
